@@ -285,6 +285,7 @@ program
       handleError(err, "init");
     }
   });
+
 program
   .command("generate")
   .description("Generate tokens, components, metadata, docs")
@@ -295,6 +296,7 @@ program
       handleError(err, "generate");
     }
   });
+
 program
   .command("validate")
   .description("Run governance validation")
@@ -305,6 +307,7 @@ program
       handleError(err, "validate");
     }
   });
+
 program
   .command("showcase")
   .description("Generate a visual showcase app")

@@ -18,7 +18,25 @@ export const DesignSystemConfigSchema = z.object({
     danger: z.string(),
     background: z.string(),
     text: z.string(),
+    surface: z.string().optional(), // elevated surfaces (sidebars, cards)
+    border: z.string().optional(), // subtle dividers / outlines
+    focus: z.string().optional(), // focus ring (defaults to primary)
+    success: z.string().optional(), // positive feedback (copy confirm etc.)
+    onPrimary: z.string().optional(), // text on primary-colored backgrounds
   }),
+  shadow: z
+    .object({
+      none: z.string().optional(),
+      small: z.string().optional(),
+      medium: z.string().optional(),
+    })
+    .optional(),
+  animation: z
+    .object({
+      duration: z.string().optional(),
+      easing: z.string().optional(),
+    })
+    .optional(),
   philosophy: z.object({
     density: z.enum(["compact", "comfortable", "spacious"]),
     elevation: z.enum(["minimal", "moderate", "high"]),
@@ -84,4 +102,86 @@ export interface GenerationContext {
   config: DesignSystemConfig;
   rules: GovernanceRules;
   outputDir: string;
+}
+
+// ─── Resolved design tokens ───────────────────────────────────────────────────
+// Single source of truth — derived from DesignSystemConfig by resolveTokens().
+// All generators consume ONLY these resolved values — no hardcoding elsewhere.
+
+export interface ResolvedTokens {
+  // ── Colors ─────────────────────────────────────────────────────────────
+  colorPrimary: string; // brand / interactive
+  colorSecondary: string; // muted / supporting
+  colorDanger: string; // destructive / error
+  colorBackground: string; // page background
+  colorText: string; // body text
+  colorSurface: string; // elevated surface (cards, sidebar)
+  colorBorder: string; // subtle borders
+  colorFocus: string; // focus ring base colour
+  colorSuccess: string; // positive feedback
+  colorOnPrimary: string; // text/icon on primary-coloured backgrounds
+  colorCodeBg: string; // inline-code / snippet background
+  // Dark-mode counterparts (used to emit CSS custom property overrides)
+  darkBackground: string;
+  darkText: string;
+  darkSurface: string;
+  darkBorder: string;
+  darkCodeBg: string;
+
+  // ── Shadows ─────────────────────────────────────────────────────────────
+  shadowNone: string;
+  shadowSmall: string;
+  shadowMedium: string;
+
+  // ── Focus ring ───────────────────────────────────────────────────────────
+  focusRing: string; // full box-shadow value
+
+  // ── Typography ───────────────────────────────────────────────────────────
+  fontFamily: string;
+  // Size scale — named by role, not arbitrary index
+  fontSizeXs: string; // scale[0]  e.g. 12px
+  fontSizeSm: string; // scale[1]  e.g. 14px
+  fontSizeMd: string; // scale[2]  e.g. 16px — body
+  fontSizeLg: string; // scale[3]  e.g. 20px
+  fontSizeXl: string; // scale[4]  e.g. 24px
+  fontSize2xl: string; // scale[5]  e.g. 32px
+  // UI chrome sizes (for labels, badges, nav items — sub-scale)
+  fontSizeUiXs: string; // scale[0] − 2px, min 10px — tiny labels
+  fontSizeUiSm: string; // scale[0]         — captions/meta
+  fontSizeUiMd: string; // scale[1]         — nav items, table rows
+  // Weights
+  fontWeightRegular: number; // fontWeights[0]  400
+  fontWeightMedium: number; // fontWeights[1]  500
+  fontWeightSemibold: number; // fontWeights[2]  600
+  // Line-heights per role
+  lineHeightTight: number; // headings h1/h2   1.2–1.25
+  lineHeightSnug: number; // headings h3/h4   1.35–1.4
+  lineHeightNormal: number; // body copy        1.5–1.6
+  lineHeightLoose: number; // small / caption  1.4–1.5
+
+  // ── Spacing ──────────────────────────────────────────────────────────────
+  // All derived from baseUnit × density multiplier
+  spaceUnit: number; // raw px number — for computed gaps (gap * spaceUnit)
+  spaceXs: string; // unit × 1
+  spaceSm: string; // unit × 2
+  spaceMd: string; // unit × 3
+  spaceLg: string; // unit × 4
+  spaceXl: string; // unit × 6
+  space2xl: string; // unit × 8
+
+  // ── Border ───────────────────────────────────────────────────────────────
+  borderWidth: string; // always "1px" — but a token so it can be overridden
+
+  // ── Radius ───────────────────────────────────────────────────────────────
+  radiusSm: string; // scale[0]
+  radiusMd: string; // scale[1]
+  radiusLg: string; // scale[2]
+  radiusXl: string; // scale[3]
+  radiusFull: string; // pill / full round
+
+  // ── Animation ────────────────────────────────────────────────────────────
+  duration: string;
+  durationFast: string; // half of duration — micro-interactions
+  easing: string;
+  transition: string; // convenience: `all ${duration} ${easing}`
 }

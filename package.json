@@ -1,10 +1,10 @@
 {
-  "name": "dsgen",
+  "name": "dsforge",
   "version": "0.1.0",
   "description": "AI-Native Design System Generator",
   "main": "dist/index.js",
   "bin": {
-    "dsgen": "./dist/cli/index.js"
+    "dsforge": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "init": "ts-node src/cli/index.ts init",
     "generate": "ts-node src/cli/index.ts generate",
-    "validate": "ts-node src/cli/index.ts validate"
+    "validate": "ts-node src/cli/index.ts validate",
+    "showcase": "ts-node src/cli/index.ts showcase"
   },
   "dependencies": {
     "chalk": "^5.3.0",

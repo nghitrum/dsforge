@@ -19,12 +19,12 @@ export function handleError(err: unknown, command: string): void {
   console.error(chalk.red(`\n  ✖ Command "${command}" failed\n`));
   if (message.includes("not found") && message.includes("config")) {
     console.error(
-      chalk.yellow("  → Config file is missing. Run dsgen init first.\n"),
+      chalk.yellow("  → Config file is missing. Run dsforge init first.\n"),
     );
   } else if (message.includes("not found") && message.includes("rules")) {
     console.error(
       chalk.yellow(
-        "  → design-system.rules.json is missing. Run dsgen init first.\n",
+        "  → design-system.rules.json is missing. Run dsforge init first.\n",
       ),
     );
   } else if (message.includes("Invalid design-system.config.json")) {
@@ -49,7 +49,7 @@ export function handleError(err: unknown, command: string): void {
     );
   } else if (message.includes("No generated metadata")) {
     console.error(
-      chalk.yellow("  → Run dsgen generate first, then try again.\n"),
+      chalk.yellow("  → Run dsforge generate first, then try again.\n"),
     );
   } else if (message.includes("ENOENT")) {
     console.error(
@@ -198,7 +198,7 @@ function printBanner(): void {
   console.log(chalk.bold.blue("  ╔══════════════════════════════════╗"));
   console.log(
     chalk.bold.blue("  ║") +
-      chalk.bold.white("  🎨 dsgen  ") +
+      chalk.bold.white("  🎨 dsforge  ") +
       chalk.dim("v0.1.0") +
       chalk.bold.blue("                ║"),
   );
@@ -246,7 +246,7 @@ async function runInteractiveMenu(): Promise<void> {
   const idx = await prompt("What do you want to do?", MAIN_OPTIONS);
   const chosen = MAIN_OPTIONS[idx];
   console.log(
-    chalk.dim(`\n  Running: `) + chalk.cyan(`dsgen ${chosen.label}\n`),
+    chalk.dim(`\n  Running: `) + chalk.cyan(`dsforge ${chosen.label}\n`),
   );
   try {
     await MAIN_ACTIONS[idx]();
@@ -259,19 +259,19 @@ async function runInteractiveMenu(): Promise<void> {
 
 const program = new Command();
 program
-  .name("dsgen")
+  .name("dsforge")
   .description("AI-Native Design System Generator")
   .version("0.1.0")
   .addHelpText(
     "after",
     `
   Examples:
-    $ npx dsgen                  # interactive menu
-    $ npx dsgen init             # create config files
-    $ npx dsgen generate         # generate everything
-    $ npx dsgen validate         # check governance rules
-    $ npx dsgen showcase --html  # HTML showcase (no build step)
-    $ npx dsgen showcase --vite  # Vite + React showcase
+    $ npx dsforge                  # interactive menu
+    $ npx dsforge init             # create config files
+    $ npx dsforge generate         # generate everything
+    $ npx dsforge validate         # check governance rules
+    $ npx dsforge showcase --html  # HTML showcase (no build step)
+    $ npx dsforge showcase --vite  # Vite + React showcase
   `,
   );
 

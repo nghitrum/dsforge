@@ -1,4 +1,4 @@
-# dsgen
+# dsforge
 
 > AI-Native Design System Generator
 
@@ -8,7 +8,7 @@ Transform a simple config file into production-ready React components, typed des
 
 ## What it does
 
-You define your brand in two files. dsgen takes care of the rest.
+You define your brand in two files. dsforge takes care of the rest.
 
 ```
 design-system.config.json   →   tokens, components, docs, metadata
@@ -30,7 +30,7 @@ design-system.rules.json    →   governance validation
 ### In your project
 
 ```bash
-npx dsgen
+npx dsforge
 ```
 
 That's it. The interactive menu guides you through the rest.
@@ -38,17 +38,17 @@ That's it. The interactive menu guides you through the rest.
 Or run commands directly:
 
 ```bash
-npx dsgen init       # create config files
-npx dsgen generate   # generate everything
-npx dsgen validate   # check governance rules
-npx dsgen showcase   # launch the visual showcase
+npx dsforge init       # create config files
+npx dsforge generate   # generate everything
+npx dsforge validate   # check governance rules
+npx dsforge showcase   # launch the visual showcase
 ```
 
 ### As a contributor
 
 ```bash
-git clone https://github.com/nghitrum/dsgen
-cd dsgen
+git clone https://github.com/nghitrum/dsforge
+cd dsforge
 npm install
 npm run dev          # interactive menu via ts-node
 ```
@@ -57,14 +57,14 @@ npm run dev          # interactive menu via ts-node
 
 ## Commands
 
-| Command                 | What it does                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------- |
-| `dsgen init`            | Creates `design-system.config.json` and `design-system.rules.json` in the current directory |
-| `dsgen generate`        | Generates tokens, components, metadata, and docs into `generated/`                          |
-| `dsgen validate`        | Runs governance validation against your rules file                                          |
-| `dsgen showcase`        | Generates and launches a visual design system showcase                                      |
-| `dsgen showcase --html` | Generates a self-contained HTML file and opens it in your browser                           |
-| `dsgen showcase --vite` | Generates a Vite + React app, installs deps, and starts the dev server                      |
+| Command                   | What it does                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `dsforge init`            | Creates `design-system.config.json` and `design-system.rules.json` in the current directory |
+| `dsforge generate`        | Generates tokens, components, metadata, and docs into `generated/`                          |
+| `dsforge validate`        | Runs governance validation against your rules file                                          |
+| `dsforge showcase`        | Generates and launches a visual design system showcase                                      |
+| `dsforge showcase --html` | Generates a self-contained HTML file and opens it in your browser                           |
+| `dsforge showcase --vite` | Generates a Vite + React app, installs deps, and starts the dev server                      |
 
 ---
 
@@ -121,7 +121,7 @@ Defines governance rules per component. Also committed to git.
 
 ## Generated output
 
-Everything in `generated/` is derived from your config — never edit it by hand. Re-run `dsgen generate` to rebuild.
+Everything in `generated/` is derived from your config — never edit it by hand. Re-run `dsforge generate` to rebuild.
 
 ```
 generated/
@@ -153,7 +153,7 @@ generated/
 
 ## Governance validation
 
-`dsgen validate` checks your generated components against `design-system.rules.json` and reports any violations:
+`dsforge validate` checks your generated components against `design-system.rules.json` and reports any violations:
 
 ```
 Governance Validation Report
@@ -203,7 +203,7 @@ Each component gets a machine-readable metadata file designed for AI agents to c
 ## Project structure
 
 ```
-dsgen/
+dsforge/
 ├── src/
 │   ├── cli/
 │   │   ├── index.ts              ← CLI entrypoint, shared prompt() utility
@@ -249,6 +249,6 @@ npm run typecheck    # type-check without emitting
 - [ ] More components — Modal, Table, Dropdown, Badge
 - [ ] Figma token integration
 - [ ] AI-assisted variant suggestions
-- [ ] Migration / change impact reports (`dsgen diff`)
+- [ ] Migration / change impact reports (`dsforge diff`)
 - [ ] CI/CD integration guide
 - [ ] Hosted platform for teams

@@ -96,22 +96,22 @@ export async function showcaseCommand(
   cwd: string,
   flagFormat?: string,
 ): Promise<void> {
-  console.log(chalk.bold.blue("\n🖼️  dsgen showcase\n"));
+  console.log(chalk.bold.blue("\n🖼️  dsforge showcase\n"));
 
   if (!(await fs.pathExists(path.join(cwd, "design-system.config.json")))) {
     throw new Error(
-      `design-system.config.json not found.\n    Run "dsgen init" first.`,
+      `design-system.config.json not found.\n    Run "dsforge init" first.`,
     );
   }
   if (!(await fs.pathExists(path.join(cwd, "design-system.rules.json")))) {
     throw new Error(
-      `design-system.rules.json not found.\n    Run "dsgen init" first.`,
+      `design-system.rules.json not found.\n    Run "dsforge init" first.`,
     );
   }
   const metadataPath = path.join(cwd, "generated", "metadata", "index.json");
   if (!(await fs.pathExists(metadataPath))) {
     throw new Error(
-      `No generated metadata found.\n    Run "dsgen generate" first.`,
+      `No generated metadata found.\n    Run "dsforge generate" first.`,
     );
   }
 
@@ -123,7 +123,7 @@ export async function showcaseCommand(
     metadataIndex = await fs.readJson(metadataPath);
   } catch {
     throw new Error(
-      `Could not read metadata/index.json. Run "dsgen generate" again.`,
+      `Could not read metadata/index.json. Run "dsforge generate" again.`,
     );
   }
   const metadata = metadataIndex.components as ComponentMetadata[];

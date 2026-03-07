@@ -12,7 +12,7 @@ export async function loadConfig(cwd: string): Promise<DesignSystemConfig> {
 
   if (!(await fs.pathExists(configPath))) {
     throw new Error(
-      `Config file not found at ${configPath}. Run "dsgen init" first.`,
+      `Config file not found at ${configPath}. Run "dsforge init" first.`,
     );
   }
 
@@ -34,7 +34,7 @@ export async function loadRules(cwd: string): Promise<GovernanceRules> {
 
   if (!(await fs.pathExists(rulesPath))) {
     throw new Error(
-      `Rules file not found at ${rulesPath}. Run "dsgen init" first.`,
+      `Rules file not found at ${rulesPath}. Run "dsforge init" first.`,
     );
   }
 

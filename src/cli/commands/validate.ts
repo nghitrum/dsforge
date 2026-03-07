@@ -9,7 +9,7 @@ import {
 import { ComponentMetadata } from "../../types";
 
 export async function validateCommand(cwd: string): Promise<void> {
-  console.log(chalk.bold.blue("\n🔍 dsgen validate\n"));
+  console.log(chalk.bold.blue("\n🔍 dsforge validate\n"));
 
   const rulesPath = path.join(cwd, "design-system.rules.json");
   const generatedDir = path.join(cwd, "generated");
@@ -17,17 +17,17 @@ export async function validateCommand(cwd: string): Promise<void> {
 
   if (!(await fs.pathExists(rulesPath))) {
     throw new Error(
-      `design-system.rules.json not found in ${cwd}.\n    Run "dsgen init" to create it.`,
+      `design-system.rules.json not found in ${cwd}.\n    Run "dsforge init" to create it.`,
     );
   }
   if (!(await fs.pathExists(generatedDir))) {
     throw new Error(
-      `No "generated/" directory found.\n    Run "dsgen generate" first.`,
+      `No "generated/" directory found.\n    Run "dsforge generate" first.`,
     );
   }
   if (!(await fs.pathExists(metadataPath))) {
     throw new Error(
-      `metadata/index.json not found.\n    Run "dsgen generate" to produce it.`,
+      `metadata/index.json not found.\n    Run "dsforge generate" to produce it.`,
     );
   }
 
@@ -45,7 +45,7 @@ export async function validateCommand(cwd: string): Promise<void> {
     metadataIndex = await fs.readJson(metadataPath);
   } catch {
     throw new Error(
-      `Could not parse metadata/index.json — it may be corrupted.\n    Try running "dsgen generate" again.`,
+      `Could not parse metadata/index.json — it may be corrupted.\n    Try running "dsforge generate" again.`,
     );
   }
 
@@ -54,7 +54,7 @@ export async function validateCommand(cwd: string): Promise<void> {
     metadataIndex.components.length === 0
   ) {
     throw new Error(
-      `metadata/index.json has no components.\n    Try running "dsgen generate" again.`,
+      `metadata/index.json has no components.\n    Try running "dsforge generate" again.`,
     );
   }
 

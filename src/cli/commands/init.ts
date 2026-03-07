@@ -42,7 +42,7 @@ const DEFAULT_RULES = {
 };
 
 export async function initCommand(cwd: string): Promise<void> {
-  console.log(chalk.bold.blue("\n🎨 dsgen init\n"));
+  console.log(chalk.bold.blue("\n🎨 dsforge init\n"));
 
   const configPath = path.join(cwd, "design-system.config.json");
   const rulesPath = path.join(cwd, "design-system.rules.json");
@@ -78,9 +78,9 @@ export async function initCommand(cwd: string): Promise<void> {
     console.log(
       chalk.dim("  2. Edit design-system.rules.json to set governance rules"),
     );
-    console.log(chalk.dim("  3. Run: ") + chalk.cyan("npx dsgen generate"));
+    console.log(chalk.dim("  3. Run: ") + chalk.cyan("npx dsforge generate"));
   } else {
-    console.log(chalk.bold("\n  Run: ") + chalk.cyan("npx dsgen generate"));
+    console.log(chalk.bold("\n  Run: ") + chalk.cyan("npx dsforge generate"));
   }
 
   console.log();

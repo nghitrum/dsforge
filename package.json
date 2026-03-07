@@ -1,0 +1,40 @@
+{
+  "name": "dsgen",
+  "version": "0.1.0",
+  "description": "AI-Native Design System Generator",
+  "main": "dist/index.js",
+  "bin": {
+    "dsgen": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli/index.ts",
+    "start": "node dist/cli/index.js",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "init": "ts-node src/cli/index.ts init",
+    "generate": "ts-node src/cli/index.ts generate",
+    "validate": "ts-node src/cli/index.ts validate"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
+    "ora": "^8.0.1",
+    "prettier": "^3.2.5",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "design-system",
+    "codegen",
+    "cli",
+    "ai"
+  ],
+  "license": "MIT"
+}

@@ -3,14 +3,29 @@ import { z } from "zod";
 export const DesignSystemConfigSchema = z.object({
   typography: z.object({
     fontFamily: z.string(),
-    scale: z.array(z.number()),
-    fontWeights: z.array(z.number()),
+    scale: z
+      .array(z.number().positive())
+      .min(
+        6,
+        "typography.scale must have at least 6 entries (xs → 2xl). Example: [12, 14, 16, 20, 24, 32]",
+      ),
+    fontWeights: z
+      .array(z.number().int().min(100).max(900))
+      .min(
+        3,
+        "typography.fontWeights must have at least 3 entries (regular, medium, semibold). Example: [400, 500, 600]",
+      ),
   }),
   spacing: z.object({
-    baseUnit: z.number(),
+    baseUnit: z.number().positive(),
   }),
   radius: z.object({
-    scale: z.array(z.number()),
+    scale: z
+      .array(z.number().nonnegative())
+      .min(
+        4,
+        "radius.scale must have at least 4 entries (sm → xl). Example: [2, 4, 8, 16]",
+      ),
   }),
   color: z.object({
     primary: z.string(),
@@ -35,6 +50,15 @@ export const DesignSystemConfigSchema = z.object({
     .object({
       duration: z.string().optional(),
       easing: z.string().optional(),
+    })
+    .optional(),
+  darkMode: z
+    .object({
+      background: z.string().optional(), // default: #0f172a
+      text: z.string().optional(), // default: #f1f5f9
+      surface: z.string().optional(), // default: #1e293b
+      border: z.string().optional(), // default: rgba(255,255,255,0.08)
+      codeBg: z.string().optional(), // default: #1e293b
     })
     .optional(),
   philosophy: z.object({

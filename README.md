@@ -20,8 +20,7 @@ design-system.rules.json    →   governance validation
 - **Tokens** — typed TypeScript + CSS custom properties
 - **Components** — `Button`, `Input`, `Card`, `Typography`, `Stack` in React + TypeScript, with accessibility built in
 - **Metadata** — AI-consumable JSON describing each component's role, interaction model, and accessibility contract
-- **Docs** — Storybook-ready MDX files
-- **Showcase** — a live visual app to browse your entire design system (HTML or Vite + React)
+- **Showcase** — a self-contained HTML file to browse your entire design system
 
 ---
 
@@ -41,7 +40,7 @@ Or run commands directly:
 npx dsforge init       # create config files
 npx dsforge generate   # generate everything
 npx dsforge validate   # check governance rules
-npx dsforge showcase   # launch the visual showcase
+npx dsforge showcase   # open the visual showcase
 ```
 
 ### As a contributor
@@ -57,14 +56,28 @@ npm run dev          # interactive menu via ts-node
 
 ## Commands
 
-| Command                   | What it does                                                                                |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| `dsforge init`            | Creates `design-system.config.json` and `design-system.rules.json` in the current directory |
-| `dsforge generate`        | Generates tokens, components, metadata, and docs into `generated/`                          |
-| `dsforge validate`        | Runs governance validation against your rules file                                          |
-| `dsforge showcase`        | Generates and launches a visual design system showcase                                      |
-| `dsforge showcase --html` | Generates a self-contained HTML file and opens it in your browser                           |
-| `dsforge showcase --vite` | Generates a Vite + React app, installs deps, and starts the dev server                      |
+| Command            | What it does                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| `dsforge init`     | Creates `design-system.config.json` and `design-system.rules.json` in the current directory |
+| `dsforge generate` | Generates tokens, components, and metadata into `generated/`                                |
+| `dsforge validate` | Runs governance validation against your rules file                                          |
+| `dsforge showcase` | Generates a self-contained HTML showcase and opens it in your browser                       |
+
+---
+
+## CI usage
+
+> **Always use explicit sub-commands in CI.** The bare `dsforge` command launches an interactive menu that reads from stdin. In a non-TTY environment (CI pipelines, Docker builds, scripts) this will block indefinitely waiting for input.
+
+Use explicit commands in your pipeline:
+
+```yaml
+# GitHub Actions example
+- run: npx dsforge generate
+- run: npx dsforge validate # exits non-zero on errors, blocking the build
+```
+
+`dsforge validate` is the only command intended for CI — it exits with a non-zero code when governance errors are found, making it suitable as a build gate. `generate` and `showcase` are developer-facing commands and should not be needed in CI unless you are publishing the showcase as a static site.
 
 ---
 
@@ -93,6 +106,20 @@ Defines your brand tokens. This file is committed to git.
   "philosophy": {
     "density": "comfortable",
     "elevation": "minimal"
+  }
+}
+```
+
+**Optional: custom dark mode palette.** By default dsforge derives a dark mode palette automatically. Override any or all values with a `darkMode` block:
+
+```json
+{
+  "darkMode": {
+    "background": "#1c1410",
+    "text": "#fdf4e7",
+    "surface": "#2a1f18",
+    "border": "rgba(255,220,180,0.10)",
+    "codeBg": "#2a1f18"
   }
 }
 ```
@@ -140,13 +167,8 @@ generated/
 │   ├── Input.json
 │   ├── Card.json
 │   └── index.json
-├── docs/
-│   ├── index.mdx
-│   ├── Button.mdx
-│   ├── Input.mdx
-│   └── Card.mdx
 └── showcase/
-    └── index.html         ← or a full Vite app
+    └── index.html         ← self-contained visual showcase
 ```
 
 ---
@@ -216,8 +238,7 @@ dsforge/
 │   │   ├── tokens.ts
 │   │   ├── components.ts
 │   │   ├── metadata.ts
-│   │   ├── docs.ts
-│   │   └── showcase.ts           ← HTML + Vite app builder
+│   │   └── showcase.ts           ← HTML showcase builder
 │   ├── validators/
 │   │   └── governance.ts
 │   ├── utils/
@@ -233,13 +254,13 @@ dsforge/
 ## Development scripts
 
 ```bash
-npm run dev          # run CLI via ts-node (interactive menu)
+npm run dev              # run CLI via ts-node (interactive menu)
 npm run dev -- init      # run a specific command
 npm run dev -- generate
 npm run dev -- validate
 npm run dev -- showcase
-npm run build        # compile TypeScript → dist/
-npm run typecheck    # type-check without emitting
+npm run build            # compile TypeScript → dist/
+npm run typecheck        # type-check without emitting
 ```
 
 ---

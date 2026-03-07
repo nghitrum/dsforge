@@ -44,12 +44,15 @@ export function validateGovernance(
       componentRules.colorPalette &&
       meta.tokens
     ) {
-      const usedColors = Object.entries(meta.tokens)
-        .filter(([k]) => k.toLowerCase().includes("color"))
-        .map(([k]) => k.replace(/^color/, "").toLowerCase());
+      // Only match token keys that start with "color" (e.g. colorPrimary, colorDanger).
+      // Keys like borderColor or backgroundColor intentionally do NOT start with "color"
+      // and must not be checked against the palette — they are not color-role tokens.
+      const usedColors = Object.keys(meta.tokens)
+        .filter((k) => /^color[A-Z]/.test(k))
+        .map((k) => k.replace(/^color/, "").toLowerCase());
 
       for (const color of usedColors) {
-        if (color && !componentRules.colorPalette.includes(color)) {
+        if (!componentRules.colorPalette.includes(color)) {
           warnings.push({
             rule: "colorPalette",
             message: `Color token "${color}" may not be in allowed palette: [${componentRules.colorPalette.join(", ")}]`,
@@ -82,6 +85,20 @@ export function validateGovernance(
         warnings.push({
           rule: "maxWidth",
           message: `maxWidth "${meta.tokens.maxWidth}" differs from rule "${componentRules.maxWidth}"`,
+          severity: "warning",
+        });
+      }
+    }
+
+    if (
+      "allowedShadows" in componentRules &&
+      componentRules.allowedShadows &&
+      meta.tokens.shadow
+    ) {
+      if (!componentRules.allowedShadows.includes(meta.tokens.shadow)) {
+        warnings.push({
+          rule: "allowedShadows",
+          message: `shadow "${meta.tokens.shadow}" is not in allowedShadows: [${componentRules.allowedShadows.join(", ")}]`,
           severity: "warning",
         });
       }

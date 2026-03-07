@@ -76,6 +76,7 @@ export async function generateMetadata(
         backgroundColor: config.color.background,
         borderRadius: `${config.radius.scale[2]}px`,
         maxWidth: rules.card?.maxWidth ?? "600px",
+        shadow: "small",
       },
     },
     {

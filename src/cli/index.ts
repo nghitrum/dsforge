@@ -270,8 +270,7 @@ program
     $ npx dsforge init             # create config files
     $ npx dsforge generate         # generate everything
     $ npx dsforge validate         # check governance rules
-    $ npx dsforge showcase --html  # HTML showcase (no build step)
-    $ npx dsforge showcase --vite  # Vite + React showcase
+    $ npx dsforge showcase         # open HTML showcase in browser
   `,
   );
 
@@ -310,13 +309,10 @@ program
 
 program
   .command("showcase")
-  .description("Generate a visual showcase app")
-  .option("--html", "Self-contained HTML file")
-  .option("--vite", "Vite + React app")
-  .action(async (opts) => {
-    const format = opts.html ? "html" : opts.vite ? "vite" : undefined;
+  .description("Generate a visual HTML showcase for your design system")
+  .action(async () => {
     try {
-      await showcaseCommand(process.cwd(), format);
+      await showcaseCommand(process.cwd());
     } catch (err) {
       handleError(err, "showcase");
     }

@@ -21,12 +21,12 @@ export function resolveTokens(config: DesignSystemConfig): ResolvedTokens {
   const colorOnPrimary = color.onPrimary ?? contrastColor(color.primary);
   const colorCodeBg = deriveCodeBg(color.background, colorSurface);
 
-  // Dark mode — derived if not configured
-  const darkBackground = "#0f172a";
-  const darkText = "#f1f5f9";
-  const darkSurface = "#1e293b";
-  const darkBorder = "rgba(255,255,255,0.08)";
-  const darkCodeBg = "#1e293b";
+  // Dark mode — user-configurable via config.darkMode, with sensible defaults
+  const darkBackground = config.darkMode?.background ?? "#0f172a";
+  const darkText = config.darkMode?.text ?? "#f1f5f9";
+  const darkSurface = config.darkMode?.surface ?? "#1e293b";
+  const darkBorder = config.darkMode?.border ?? "rgba(255,255,255,0.08)";
+  const darkCodeBg = config.darkMode?.codeBg ?? "#1e293b";
 
   // ── Shadows ─────────────────────────────────────────────────────────────────
   const shadows = resolveShadows(philosophy.elevation, shadow);

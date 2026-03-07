@@ -55,3 +55,7 @@ vite.config.ts.timestamp-*
 # ─── Local dev artifacts (generated when testing the CLI locally) ─────────────
 design-system.config.json
 design-system.rules.json
+
+# ─── Local settings ─────────────
+.vscode/
+.claude

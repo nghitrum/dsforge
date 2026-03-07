@@ -710,6 +710,7 @@ async function generateHTML(
     `  <meta charset="UTF-8" />`,
     `  <meta name="viewport" content="width=device-width, initial-scale=1.0" />`,
     `  <title>Design System</title>`,
+    `  <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">`,
     `  <link rel="preconnect" href="https://fonts.googleapis.com">`,
     `  <link href="${googleFont}" rel="stylesheet">`,
     `  <style>${css}</style>`,
@@ -1006,6 +1007,7 @@ async function generateVite(
       `    <meta charset="UTF-8" />`,
       `    <meta name="viewport" content="width=device-width, initial-scale=1.0" />`,
       `    <title>Design System</title>`,
+      `    <link rel="icon" type="image/x-icon" href="/favicon.ico">`,
       `    <link rel="preconnect" href="https://fonts.googleapis.com">`,
       `    <link href="${googleFont}" rel="stylesheet">`,
       `  </head>`,
@@ -1018,6 +1020,14 @@ async function generateVite(
   );
 
   await fs.ensureDir(path.join(showcaseDir, "src"));
+
+  // Copy favicon into Vite public/ dir so it is served at /favicon.ico
+  await fs.ensureDir(path.join(showcaseDir, "public"));
+  const faviconSrc = path.resolve(process.cwd(), "assets", "favicon.ico");
+  const faviconDst = path.join(showcaseDir, "public", "favicon.ico");
+  if (await fs.pathExists(faviconSrc)) {
+    await fs.copy(faviconSrc, faviconDst);
+  }
 
   await fs.writeFile(
     path.join(showcaseDir, "src", "main.jsx"),
@@ -1428,7 +1438,7 @@ function ColorsSection() {
       </div>
       <div style={{ display:'flex', flexWrap:'wrap', gap: T.spaceLg, marginTop: T.spaceSm }}>
         {Object.entries(
-          metadata.reduce((acc, m) => ({ ...acc, ...m.tokens }), {} as Record<string,string>)
+          metadata.reduce((acc, m) => ({ ...acc, ...m.tokens }), {})
         ).filter(([, v]) => v.startsWith('#')).map(([name, value]) => (
           <div key={name} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: T.spaceXs, cursor:'pointer' }} onClick={() => navigator.clipboard.writeText(value)}>
             <div style={{ width: T.space2xl, height: T.space2xl, borderRadius: T.radiusLg, background: value, border: T.borderWidth + ' solid var(--color-border)', transition: 'transform ' + T.durationFast + ' ' + T.easing }}

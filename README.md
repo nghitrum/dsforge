@@ -1,203 +1,203 @@
 # dsforge
 
-> AI-Native Design System Generator
+**AI-native design system generator.** One config file. One command. Typed React components, CSS tokens, governance validation, MDX docs, and a live visual showcase — all wired together and ready to ship.
 
-Transform a simple config file into production-ready React components, typed design tokens, AI-consumable metadata, governance validation, and a live visual showcase — all from the CLI.
+```
+dsforge generate
+```
 
 ---
 
-## What it does
+## Why
 
-You define your brand in two files. dsforge takes care of the rest.
+Mid-sized teams repeat the same manual cycle: design tokens get transcribed by hand, components drift from specs, docs fall out of date, and AI coding tools have no way to know the rules. dsforge collapses that cycle into a single source of truth.
 
-```
-design-system.config.json   →   tokens, components, docs, metadata
-design-system.rules.json    →   governance validation
-```
-
-**What gets generated:**
-
-- **Tokens** — typed TypeScript + CSS custom properties
-- **Components** — `Button`, `Input`, `Card`, `Typography`, `Stack` in React + TypeScript, with accessibility built in
-- **Metadata** — AI-consumable JSON describing each component's role, interaction model, and accessibility contract
-- **Showcase** — a self-contained HTML file to browse your entire design system
+Write your design standards once in `design-system.config.json`. dsforge generates everything else — and keeps it consistent every time you run it.
 
 ---
 
-## Getting started
-
-### In your project
+## Installation
 
 ```bash
+npm install -g dsforge
+# or run without installing
 npx dsforge
 ```
 
-That's it. The interactive menu guides you through the rest.
+Requires **Node.js ≥ 18**.
 
-Or run commands directly:
+---
 
-```bash
-npx dsforge init       # create config files
-npx dsforge generate   # generate everything
-npx dsforge validate   # check governance rules
-npx dsforge showcase   # open the visual showcase
-```
-
-### As a contributor
+## Quick start
 
 ```bash
-git clone https://github.com/nghitrum/dsforge
-cd dsforge
-npm install
-npm run dev          # interactive menu via ts-node
+# 1. Scaffold a config and rules file in the current directory
+dsforge init
+
+# 2. Generate the full design system
+dsforge generate
+
+# 3. Open the visual showcase in your browser
+dsforge showcase
 ```
+
+Output lands in `dist-ds/`. Everything in there is gitignored by default — regenerate it any time from the source config.
 
 ---
 
 ## Commands
 
-| Command            | What it does                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| `dsforge init`     | Creates `design-system.config.json` and `design-system.rules.json` in the current directory |
-| `dsforge generate` | Generates tokens, components, and metadata into `generated/`                                |
-| `dsforge validate` | Runs governance validation against your rules file                                          |
-| `dsforge showcase` | Generates a self-contained HTML showcase and opens it in your browser                       |
+| Command            | What it does                                                                      |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `dsforge init`     | Interactively scaffold `design-system.config.json` and `design-system.rules.json` |
+| `dsforge generate` | Run the full pipeline → tokens, components, metadata, docs, showcase              |
+| `dsforge validate` | Run 9 health checks and score the config against your governance rules            |
+| `dsforge diff`     | Compare two config files and report BREAKING / CHANGED / ADDED changes            |
+| `dsforge showcase` | Open `dist-ds/showcase.html` in your default browser                              |
+
+All commands are also available as an interactive menu: run `dsforge` with no arguments.
 
 ---
 
-## CI usage
+## Config file
 
-> **Always use explicit sub-commands in CI.** The bare `dsforge` command launches an interactive menu that reads from stdin. In a non-TTY environment (CI pipelines, Docker builds, scripts) this will block indefinitely waiting for input.
-
-Use explicit commands in your pipeline:
-
-```yaml
-# GitHub Actions example
-- run: npx dsforge generate
-- run: npx dsforge validate # exits non-zero on errors, blocking the build
-```
-
-`dsforge validate` is the only command intended for CI — it exits with a non-zero code when governance errors are found, making it suitable as a build gate. `generate` and `showcase` are developer-facing commands and should not be needed in CI unless you are publishing the showcase as a static site.
-
----
-
-## Config files
-
-### `design-system.config.json`
-
-Defines your brand tokens. This file is committed to git.
+`design-system.config.json` is the single source of truth. A minimal example:
 
 ```json
 {
+  "meta": { "name": "Acme DS", "version": "1.0.0" },
+
+  "tokens": {
+    "global": {
+      "blue-600": "#2563eb",
+      "gray-900": "#0f172a",
+      "white": "#ffffff"
+    },
+    "semantic": {
+      "color-action": "{global.blue-600}",
+      "color-text-primary": "{global.gray-900}",
+      "color-bg-default": "{global.white}"
+    }
+  },
+
   "typography": {
-    "fontFamily": "Inter",
-    "scale": [12, 14, 16, 20, 24, 32],
-    "fontWeights": [400, 500, 600]
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "roles": {
+      "body": { "size": 14, "weight": 400, "lineHeight": 1.6 },
+      "heading": { "size": 24, "weight": 700, "lineHeight": 1.2 }
+    }
   },
-  "spacing": { "baseUnit": 4 },
-  "radius": { "scale": [2, 4, 8, 16] },
-  "color": {
-    "primary": "#2563eb",
-    "secondary": "#64748b",
-    "danger": "#dc2626",
-    "background": "#ffffff",
-    "text": "#111827"
+
+  "spacing": { "baseUnit": 4, "scale": { "1": 4, "2": 8, "4": 16, "6": 24 } },
+  "radius": { "sm": 2, "md": 4, "lg": 8, "full": 9999 },
+  "elevation": { "0": "none", "1": "0 1px 3px rgb(0 0 0 / 0.1)" },
+  "motion": {
+    "duration": { "fast": 120, "base": 200 },
+    "easing": { "ease": "ease-in-out" }
   },
-  "philosophy": {
-    "density": "comfortable",
-    "elevation": "minimal"
+
+  "themes": {
+    "light": {},
+    "dark": {
+      "color-bg-default": "#0f172a",
+      "color-text-primary": "#f8fafc"
+    }
   }
 }
 ```
 
-**Optional: custom dark mode palette.** By default dsforge derives a dark mode palette automatically. Override any or all values with a `darkMode` block:
+Tokens use a three-tier system: **global → semantic → component**. References use `{layer.key}` syntax and are resolved at generate time.
+
+---
+
+## Rules file
+
+`design-system.rules.json` encodes your governance constraints. dsforge validates the generated output against them:
 
 ```json
 {
-  "darkMode": {
-    "background": "#1c1410",
-    "text": "#fdf4e7",
-    "surface": "#2a1f18",
-    "border": "rgba(255,220,180,0.10)",
-    "codeBg": "#2a1f18"
-  }
-}
-```
-
-### `design-system.rules.json`
-
-Defines governance rules per component. Also committed to git.
-
-```json
-{
-  "button": {
-    "allowedVariants": ["primary", "secondary", "danger"],
-    "maxWidth": "300px",
-    "colorPalette": ["primary", "secondary", "danger"],
-    "requiredAccessibility": ["aria-label", "keyboard-support"]
+  "governance": {
+    "requireSemanticTokens": true,
+    "forbidHardcodedColors": true,
+    "requireAccessibilityProps": true
   },
-  "card": {
-    "maxWidth": "600px",
-    "borderRadius": ["2px", "4px", "8px"],
-    "allowedShadows": ["none", "small", "medium"]
+  "components": {
+    "button": {
+      "allowedVariants": ["primary", "secondary", "danger", "ghost"],
+      "requiredProps": ["children"]
+    }
   }
 }
 ```
 
 ---
 
-## Generated output
+## Output structure
 
-Everything in `generated/` is derived from your config — never edit it by hand. Re-run `dsforge generate` to rebuild.
+Running `dsforge generate` produces:
 
 ```
-generated/
-├── tokens/
-│   ├── index.ts          ← typed token object
-│   └── tokens.css        ← CSS custom properties
-├── components/
+dist-ds/
+├── package.json          — publishable package manifest
+├── tsconfig.json
+├── README.md
+├── CHANGELOG.md          — preserved on subsequent runs; edit freely
+│
+├── src/
 │   ├── Button.tsx
 │   ├── Input.tsx
 │   ├── Card.tsx
-│   ├── Typography.tsx
-│   ├── Stack.tsx
-│   └── index.ts          ← barrel export
+│   ├── ThemeProvider.tsx
+│   └── index.ts          — barrel export
+│
+├── tokens/
+│   ├── base.css          — global + semantic CSS custom properties
+│   ├── light.css         — light theme overrides
+│   ├── dark.css          — dark theme overrides
+│   ├── tokens.js         — JS token map
+│   └── tailwind.js       — Tailwind theme extension
+│
 ├── metadata/
-│   ├── Button.json        ← AI-consumable metadata
-│   ├── Input.json
-│   ├── Card.json
-│   └── index.json
-└── showcase/
-    └── index.html         ← self-contained visual showcase
+│   ├── index.json        — system-level metadata
+│   ├── button.json       — per-component AI contract
+│   ├── input.json
+│   └── card.json
+│
+├── docs/
+│   ├── index.mdx
+│   ├── button.mdx
+│   ├── input.mdx
+│   └── card.mdx
+│
+├── assets/
+│   └── favicon.svg
+│
+└── showcase.html         — self-contained visual docs (no server needed)
 ```
 
 ---
 
-## Governance validation
+## Showcase
 
-`dsforge validate` checks your generated components against `design-system.rules.json` and reports any violations:
+`showcase.html` is a zero-dependency self-contained documentation site. Open it directly in a browser — no build step, no server.
 
-```
-Governance Validation Report
-════════════════════════════════════════
-✅ Button — no issues
-✅ Input  — no issues
+It includes:
 
-📦 Card
-  ⚠ [WARNING] borderRadius "16px" is not in allowed values: [2px, 4px, 8px]
+- **Foundations** — color swatches, type scale, spacing bars, radius previews, elevation levels, motion previews with live animation
+- **Components** — each component gets five tabs:
+  - **Overview** — live previews of all variants and states, themed with your actual tokens
+  - **Props** — full prop table with types, defaults, and required flag
+  - **Examples** — copyable TSX snippets with live previews
+  - **Accessibility** — WCAG criterion cards with level badges
+  - **AI Metadata** — the JSON contract with copyable output and usage guidance
 
-────────────────────────────────────────
-Summary: 0 error(s), 1 warning(s)
-⚠️  Validation passed with warnings
-```
-
-Errors exit with a non-zero code, making it easy to block CI on violations.
+Theme switching (light/dark) is built in when both themes are defined in config.
 
 ---
 
 ## AI metadata
 
-Each component gets a machine-readable metadata file designed for AI agents to consume before generating UI:
+Each component emits a machine-readable contract to `dist-ds/metadata/<component>.json`:
 
 ```json
 {
@@ -206,18 +206,72 @@ Each component gets a machine-readable metadata file designed for AI agents to c
   "hierarchyLevel": "primary",
   "interactionModel": "synchronous",
   "layoutImpact": "inline",
-  "destructive": false,
+  "destructiveVariants": ["danger"],
   "accessibilityContract": {
     "keyboard": true,
     "focusRing": "required",
     "ariaLabel": "required-for-icon-only"
   },
-  "variants": ["primary", "secondary", "danger"],
-  "tokens": {
-    "colorPrimary": "#2563eb",
-    "borderRadius": "4px"
-  }
+  "variants": ["primary", "secondary", "danger", "ghost"],
+  "aiGuidance": [
+    "Use primary for the single most important action on a surface.",
+    "Never place two primary buttons side by side.",
+    "Use danger only for irreversible destructive actions."
+  ]
 }
+```
+
+AI coding assistants can read this before generating UI to understand constraints, hierarchy, and accessibility requirements — without having to infer them from component source code.
+
+---
+
+## Validation
+
+`dsforge validate` runs nine health checks and produces a scored report:
+
+| Check              | Max score |
+| ------------------ | --------- |
+| Token architecture | 15        |
+| Typography         | 10        |
+| Spacing            | 10        |
+| Radius             | 5         |
+| Elevation          | 5         |
+| Motion             | 5         |
+| Themes             | 10        |
+| Token resolution   | 14        |
+| Governance rules   | 15        |
+
+Scores below 70 are flagged as warnings; errors always require resolution. WCAG contrast is checked automatically for all color token pairs.
+
+---
+
+## Diff
+
+`dsforge diff old.config.json new.config.json` compares two configs and classifies every change:
+
+- **BREAKING** — tokens removed or renamed that are referenced by components
+- **CHANGED** — existing values modified
+- **ADDED** — new tokens or sections
+
+Use this before deploying a config update to understand downstream impact.
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/your-org/dsforge
+cd dsforge
+npm install
+
+# Run the CLI in dev mode (no build step needed)
+npm run dev
+
+# Type-check
+npm run typecheck
+
+# Run tests
+npm test
 ```
 
 ---
@@ -225,51 +279,54 @@ Each component gets a machine-readable metadata file designed for AI agents to c
 ## Project structure
 
 ```
-dsforge/
-├── src/
-│   ├── cli/
-│   │   ├── index.ts              ← CLI entrypoint, shared prompt() utility
-│   │   └── commands/
-│   │       ├── init.ts
-│   │       ├── generate.ts
-│   │       ├── validate.ts
-│   │       └── showcase.ts
-│   ├── generators/
-│   │   ├── tokens.ts
-│   │   ├── components.ts
-│   │   ├── metadata.ts
-│   │   └── showcase.ts           ← HTML showcase builder
-│   ├── validators/
-│   │   └── governance.ts
-│   ├── utils/
-│   │   └── config-loader.ts
-│   └── types.ts
-├── design-system.config.json     ← your brand config (committed in user projects)
-├── design-system.rules.json      ← your governance rules (committed in user projects)
-└── generated/                    ← always gitignored
-```
-
----
-
-## Development scripts
-
-```bash
-npm run dev              # run CLI via ts-node (interactive menu)
-npm run dev -- init      # run a specific command
-npm run dev -- generate
-npm run dev -- validate
-npm run dev -- showcase
-npm run build            # compile TypeScript → dist/
-npm run typecheck        # type-check without emitting
+src/
+├── cli/
+│   ├── index.ts              — entry point + subcommand routing
+│   ├── menu.ts               — interactive menu loop
+│   ├── prompt.ts             — shared readline helpers
+│   └── commands/
+│       ├── init.ts
+│       ├── generate.ts
+│       ├── validate.ts
+│       ├── diff.ts
+│       └── showcase.ts
+│
+├── core/
+│   └── token-resolver.ts     — three-tier token resolution engine
+│
+├── generators/
+│   ├── tokens/               — CSS custom properties + JS/Tailwind maps
+│   ├── components/           — Button, Input, Card, ThemeProvider
+│   ├── metadata/             — AI contract generator
+│   ├── docs/                 — MDX generator
+│   ├── package/              — package.json, tsconfig, README, CHANGELOG
+│   └── showcase/             — self-contained HTML docs generator
+│
+├── schema/
+│   └── config.schema.ts      — Zod schemas for config + rules
+│
+├── types/
+│   └── index.ts              — all shared TypeScript types
+│
+└── utils/
+    ├── fs.ts                 — file I/O helpers
+    ├── logger.ts             — chalk-based CLI logger
+    └── contrast.ts           — WCAG contrast math
 ```
 
 ---
 
 ## Roadmap
 
-- [ ] More components — Modal, Table, Dropdown, Badge
-- [ ] Figma token integration
-- [ ] AI-assisted variant suggestions
-- [ ] Migration / change impact reports (`dsforge diff`)
-- [ ] CI/CD integration guide
-- [ ] Hosted platform for teams
+- More components: Modal, Select, Toast, Table
+- AI-assisted token suggestions from brand guidelines
+- Figma token sync via Variables API
+- Change impact report with semantic versioning inference
+- CI/CD integration — fail builds on governance violations
+- Hosted platform for team collaboration
+
+---
+
+## License
+
+MIT

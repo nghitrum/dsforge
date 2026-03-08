@@ -260,40 +260,64 @@ function buildMotionSection(config: DesignSystemConfig): string {
   `;
 }
 
-function buildComponentsSection(
+function componentTokens(
+  config: DesignSystemConfig,
+  tokens: Record<string, string>,
+) {
+  return {
+    action: tokens["semantic.color-action"] ?? "#2563eb",
+    actionHover: tokens["semantic.color-action-hover"] ?? "#1d4ed8",
+    actionText: tokens["semantic.color-text-on-color"] ?? "#ffffff",
+    bg: tokens["semantic.color-bg-default"] ?? "#ffffff",
+    border: tokens["semantic.color-border-default"] ?? "#e2e8f0",
+    text: tokens["semantic.color-text-primary"] ?? "#0f172a",
+    textSecondary: tokens["semantic.color-text-secondary"] ?? "#64748b",
+    radiusMd: config.radius?.["md"] ?? 4,
+    radiusLg: config.radius?.["lg"] ?? 8,
+    ff: config.typography?.fontFamily ?? "system-ui, sans-serif",
+  };
+}
+
+function buildButtonSection(
   config: DesignSystemConfig,
   tokens: Record<string, string>,
 ): string {
-  const action = tokens["semantic.color-action"] ?? "#2563eb";
-  const actionHover = tokens["semantic.color-action-hover"] ?? "#1d4ed8";
-  const actionText = tokens["semantic.color-text-on-color"] ?? "#ffffff";
-  const bg = tokens["semantic.color-bg-default"] ?? "#ffffff";
-  const border = tokens["semantic.color-border-default"] ?? "#e2e8f0";
-  const text = tokens["semantic.color-text-primary"] ?? "#0f172a";
-  const textSecondary = tokens["semantic.color-text-secondary"] ?? "#64748b";
-  const radiusMd = config.radius?.["md"] ?? 4;
-  const radiusLg = config.radius?.["lg"] ?? 8;
-  const ff = config.typography?.fontFamily ?? "system-ui, sans-serif";
+  const { action, actionHover, actionText, text, radiusMd, ff } =
+    componentTokens(config, tokens);
+  void actionHover;
 
   return `
     <div class="section-block">
-      <h3 class="group-title">Button</h3>
+      <h3 class="group-title">Variants</h3>
       <div class="component-row" style="font-family:${esc(ff)}">
-        <button class="ds-btn ds-btn-primary" style="background:${action};color:${actionText};border-radius:${radiusMd}px;--hover-bg:${actionHover}">Primary</button>
+        <button class="ds-btn ds-btn-primary" style="background:${action};color:${actionText};border-radius:${radiusMd}px">Primary</button>
         <button class="ds-btn ds-btn-secondary" style="background:transparent;color:${action};border:1.5px solid ${action};border-radius:${radiusMd}px">Secondary</button>
         <button class="ds-btn ds-btn-danger" style="background:#dc2626;color:#fff;border-radius:${radiusMd}px">Danger</button>
         <button class="ds-btn ds-btn-ghost" style="background:transparent;color:${text};border-radius:${radiusMd}px">Ghost</button>
         <button class="ds-btn ds-btn-primary" style="background:${action};color:${actionText};border-radius:${radiusMd}px;opacity:0.4;cursor:not-allowed" disabled>Disabled</button>
       </div>
-      <div class="component-row" style="font-family:${esc(ff)};margin-top:12px">
-        <button class="ds-btn ds-btn-sm" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:12px;padding:4px 12px">Small</button>
-        <button class="ds-btn ds-btn-md" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:14px;padding:8px 16px">Medium</button>
-        <button class="ds-btn ds-btn-lg" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:16px;padding:12px 24px">Large</button>
+    </div>
+    <div class="section-block">
+      <h3 class="group-title">Sizes</h3>
+      <div class="component-row" style="font-family:${esc(ff)}">
+        <button class="ds-btn" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:12px;padding:4px 12px">Small</button>
+        <button class="ds-btn" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:14px;padding:8px 16px">Medium</button>
+        <button class="ds-btn" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:16px;padding:12px 24px">Large</button>
       </div>
     </div>
+  `;
+}
 
+function buildInputSection(
+  config: DesignSystemConfig,
+  tokens: Record<string, string>,
+): string {
+  const { action, bg, border, text, textSecondary, radiusMd, ff } =
+    componentTokens(config, tokens);
+  void action;
+  return `
     <div class="section-block">
-      <h3 class="group-title">Input</h3>
+      <h3 class="group-title">States</h3>
       <div class="component-col" style="font-family:${esc(ff)};max-width:360px">
         <div class="ds-field">
           <label class="ds-label" style="color:${text}">Default</label>
@@ -314,29 +338,42 @@ function buildComponentsSection(
         </div>
       </div>
     </div>
+  `;
+}
 
+function buildCardSection(
+  config: DesignSystemConfig,
+  tokens: Record<string, string>,
+): string {
+  const {
+    action,
+    actionText,
+    bg,
+    border,
+    text,
+    textSecondary,
+    radiusMd,
+    radiusLg,
+    ff,
+  } = componentTokens(config, tokens);
+  return `
     <div class="section-block">
-      <h3 class="group-title">Card</h3>
+      <h3 class="group-title">Variants</h3>
       <div class="component-row" style="font-family:${esc(ff)};align-items:flex-start;flex-wrap:wrap">
         <div class="ds-card" style="border-color:${border};border-radius:${radiusLg}px;background:${bg};color:${text}">
-          <div class="ds-card-header" style="border-bottom:1px solid ${border}">
-            <strong>Default card</strong>
-          </div>
-          <div class="ds-card-body">
-            <p style="color:${textSecondary};margin:0;font-size:14px">Card body content goes here. It can span multiple lines.</p>
-          </div>
+          <div class="ds-card-header" style="border-bottom:1px solid ${border}"><strong>Default</strong></div>
+          <div class="ds-card-body"><p style="color:${textSecondary};margin:0;font-size:14px">Card body content goes here.</p></div>
           <div class="ds-card-footer" style="border-top:1px solid ${border}">
             <button class="ds-btn" style="background:${action};color:${actionText};border-radius:${radiusMd}px;font-size:13px;padding:6px 14px;font-family:${esc(ff)}">Action</button>
           </div>
         </div>
-
-        <div class="ds-card ds-card-elevated" style="border-color:transparent;border-radius:${radiusLg}px;background:${bg};color:${text};box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.10)">
-          <div class="ds-card-header" style="border-bottom:1px solid ${border}">
-            <strong>Elevated card</strong>
-          </div>
-          <div class="ds-card-body">
-            <p style="color:${textSecondary};margin:0;font-size:14px">This card uses elevation shadow instead of a border.</p>
-          </div>
+        <div class="ds-card" style="border-color:transparent;border-radius:${radiusLg}px;background:${bg};color:${text};box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.10)">
+          <div class="ds-card-header" style="border-bottom:1px solid ${border}"><strong>Elevated</strong></div>
+          <div class="ds-card-body"><p style="color:${textSecondary};margin:0;font-size:14px">Uses elevation shadow instead of a border.</p></div>
+        </div>
+        <div class="ds-card" style="border:2px solid ${border};border-radius:${radiusLg}px;background:${bg};color:${text}">
+          <div class="ds-card-header" style="border-bottom:1px solid ${border}"><strong>Outlined</strong></div>
+          <div class="ds-card-body"><p style="color:${textSecondary};margin:0;font-size:14px">Stronger border, no shadow.</p></div>
         </div>
       </div>
     </div>
@@ -354,15 +391,22 @@ export function generateShowcase(
   const version = config.meta?.version ?? "0.1.0";
   const themes = Object.keys(config.themes ?? {});
 
-  const navItems = [
+  const foundationItems = [
     { id: "colors", label: "Colors" },
     { id: "typography", label: "Typography" },
     { id: "spacing", label: "Spacing" },
     { id: "radius", label: "Border Radius" },
     { id: "elevation", label: "Elevation" },
     { id: "motion", label: "Motion" },
-    { id: "components", label: "Components" },
   ];
+
+  const componentItems = [
+    { id: "button", label: "Button" },
+    { id: "input", label: "Input" },
+    { id: "card", label: "Card" },
+  ];
+
+  const allItems = [...foundationItems, ...componentItems];
 
   const sections: Record<string, string> = {
     colors: buildColorSection(config, tokens),
@@ -371,7 +415,9 @@ export function generateShowcase(
     radius: buildRadiusSection(config),
     elevation: buildElevationSection(config),
     motion: buildMotionSection(config),
-    components: buildComponentsSection(config, tokens),
+    button: buildButtonSection(config, tokens),
+    input: buildInputSection(config, tokens),
+    card: buildCardSection(config, tokens),
   };
 
   // Build CSS custom properties for light theme (default)
@@ -408,6 +454,7 @@ export function generateShowcase(
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(name)} — Design System Docs</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
   <style>
     /* ── Theme tokens ─────────────────────────────────────────── */
     [data-theme="light"] {
@@ -626,7 +673,7 @@ ${themeCssDark}
     .radius-val { font-size: 11px; color: var(--color-text-secondary, #64748b); font-family: monospace; }
 
     /* ── Elevation ────────────────────────────────────────────── */
-    .elevation-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+    .elevation-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
     .elevation-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .elevation-box {
       width: 80px; height: 80px;
@@ -660,7 +707,7 @@ ${themeCssDark}
       transform: translateX(0);
     }
     .motion-key { width: 100px; font-size: 12px; font-weight: 600; color: var(--color-text-primary, #0f172a); }
-    .motion-val { width: 60px; font-size: 12px; font-family: monospace; color: var(--color-text-secondary, #64748b); }
+    .motion-val { width: 440px; font-size: 12px; font-family: monospace; color: var(--color-text-secondary, #64748b); }
     .motion-hint { font-size: 11px; color: var(--color-text-secondary, #64748b); }
 
     /* ── Components ───────────────────────────────────────────── */
@@ -711,9 +758,8 @@ ${themeCssDark}
       <div class="sidebar-version">v${esc(version)}${themes.length ? " · " + themes.join(", ") : ""}</div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-section-label">Tokens</div>
-      ${navItems
-        .slice(0, 6)
+      <div class="sidebar-section-label">Foundations</div>
+      ${foundationItems
         .map(
           (item) => `
         <a class="nav-item${item.id === "colors" ? " active" : ""}" onclick="showPage('${item.id}', this)" href="#">${esc(item.label)}</a>
@@ -723,7 +769,13 @@ ${themeCssDark}
     </div>
     <div class="sidebar-section">
       <div class="sidebar-section-label">Components</div>
-      <a class="nav-item" onclick="showPage('components', this)" href="#">Components</a>
+      ${componentItems
+        .map(
+          (item) => `
+        <a class="nav-item" onclick="showPage('${item.id}', this)" href="#">${esc(item.label)}</a>
+      `,
+        )
+        .join("")}
     </div>
   </aside>
 
@@ -753,7 +805,7 @@ ${themeCssDark}
     </div>
 
     <div class="content">
-      ${navItems
+      ${allItems
         .map(
           ({ id, label }) => `
         <div class="page${id === "colors" ? " active" : ""}" id="page-${id}">
@@ -794,7 +846,9 @@ function pageDesc(id: string, name: string): string {
     radius: `Border radius tokens. Applied to buttons, inputs, cards, and other surfaces.`,
     elevation: `Box shadow levels. Higher levels appear more elevated.`,
     motion: `Duration and easing tokens. Click any row to preview the animation.`,
-    components: `Live previews of generated components using the current theme tokens.`,
+    button: `Button component — variants, sizes, and states.`,
+    input: `Input component — all states including error and disabled.`,
+    card: `Card component — default, elevated, and outlined variants.`,
   };
   return descs[id] ?? "";
 }

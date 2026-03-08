@@ -13,31 +13,31 @@
  */
 
 import path from "node:path";
-import { readConfig, readRules, ensureDir, writeFile } from "../../utils/fs";
-import { resolveTokens } from "../../core/token-resolver";
-import { logger } from "../../utils/logger";
-import { validateConfig } from "./validate";
-import { generateCssFiles } from "../../generators/tokens/css-vars";
+import { readConfig, readRules, ensureDir, writeFile } from "../../utils/fs.js";
+import { resolveTokens } from "../../core/token-resolver.js";
+import { logger } from "../../utils/logger.js";
+import { validateConfig } from "./validate.js";
+import { generateCssFiles } from "../../generators/tokens/css-vars.js";
 import {
   emitJsTokens,
   emitTailwindConfig,
-} from "../../generators/tokens/js-tokens";
-import { generateButton } from "../../generators/components/button";
-import { generateInput } from "../../generators/components/input";
-import { generateCard } from "../../generators/components/card";
+} from "../../generators/tokens/js-tokens.js";
+import { generateButton } from "../../generators/components/button.js";
+import { generateInput } from "../../generators/components/input.js";
+import { generateCard } from "../../generators/components/card.js";
 import {
   generateThemeProvider,
   generateComponentIndex,
-} from "../../generators/components/theme-provider";
-import { generateMetadata } from "../../generators/metadata/generator";
-import { generateDocs } from "../../generators/docs/mdx";
+} from "../../generators/components/theme-provider.js";
+import { generateMetadata } from "../../generators/metadata/generator.js";
+import { generateDocs } from "../../generators/docs/mdx.js";
 import {
   generatePackageJson,
   generateTsConfig,
   generateReadme,
   generateChangelog,
-} from "../../generators/package/emitter";
-import type { DesignSystemConfig, RulesConfig } from "../../types/index";
+} from "../../generators/package/emitter.js";
+import type { DesignSystemConfig, RulesConfig } from "../../types/index.js";
 
 export interface GenerateOptions {
   watch?: boolean;
@@ -280,6 +280,26 @@ export async function runGenerate(
 
     logger.success(`Package manifest written`);
   }
+
+  // ── 8b. Showcase ──
+  logger.step("Generating showcase...");
+  const { generateShowcase } =
+    await import("../../generators/showcase/html.js");
+  const showcaseHtml = generateShowcase(config!, resolution);
+  const showcasePath = path.join(outRoot, "showcase.html");
+  await writeFile(showcasePath, showcaseHtml);
+  logger.dim(`  → showcase.html`);
+
+  // Copy favicon
+  const fsExtra2 = await import("fs-extra");
+  const fsE2 = fsExtra2.default ?? fsExtra2;
+  const faviconSrc = path.join(cwd, "assets", "favicon.svg");
+  const faviconDest = path.join(outRoot, "assets", "favicon.svg");
+  if (await fsE2.pathExists(faviconSrc)) {
+    await fsE2.ensureDir(path.dirname(faviconDest));
+    await fsE2.copy(faviconSrc, faviconDest, { overwrite: true });
+  }
+  logger.success("Showcase generated");
 
   // ── Summary ──
   logger.blank();

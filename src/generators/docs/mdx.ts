@@ -1,0 +1,269 @@
+/**
+ * MDX documentation generator.
+ *
+ * Generates Storybook-ready MDX stories for each component.
+ * Stories demonstrate all variants, sizes, and states.
+ * Content is derived from metadata so docs always stay in sync.
+ */
+
+import type { DesignSystemConfig, RulesConfig } from "../../types/index";
+import type { ComponentMetadata } from "../metadata/generator";
+
+export interface DocFile {
+  filename: string;
+  content: string;
+}
+
+// ─── Single component doc ─────────────────────────────────────────────────────
+
+export function generateComponentDoc(
+  metadata: ComponentMetadata,
+  config: DesignSystemConfig,
+): string {
+  const {
+    component,
+    description,
+    allowedVariants,
+    sizes,
+    accessibilityContract,
+  } = metadata;
+
+  const variantStories = allowedVariants
+    .map(
+      (v) =>
+        `<${component} variant="${v}" aria-label="${v} example">${
+          component === "Button" ? v.charAt(0).toUpperCase() + v.slice(1) : ""
+        }</${component}>`,
+    )
+    .join("\n");
+
+  const sizeStories = sizes
+    ? sizes
+        .map(
+          (s) =>
+            `<${component} size="${s}" aria-label="${s} size example">${
+              component === "Button" ? s.toUpperCase() : ""
+            }</${component}>`,
+        )
+        .join("\n")
+    : "";
+
+  const requiredPropsNote =
+    metadata.requiredProps.length > 0
+      ? `\n\n> **Required props:** ${metadata.requiredProps.map((p) => `\`${p}\``).join(", ")}`
+      : "";
+
+  return `---
+title: ${component}
+description: "${description}"
+---
+
+import { ${component} } from '../components/${component}';
+import { ThemeProvider } from '../components/ThemeProvider';
+
+# ${component}
+
+${description}${requiredPropsNote}
+
+## Overview
+
+| Property | Value |
+|---|---|
+| Role | \`${metadata.role}\` |
+| Interaction | \`${metadata.interactionModel}\` |
+| Layout impact | \`${metadata.layoutImpact}\` |
+| Destructive | \`${metadata.destructive}\` |
+| Default variant | \`${metadata.defaultVariant}\` |
+
+## Variants
+
+All allowed variants as defined in \`design-system.rules.json\`:
+
+\`\`\`tsx
+${allowedVariants
+  .map(
+    (v) =>
+      `<${component} variant="${v}" aria-label="${v}">${
+        component === "Button" ? v.charAt(0).toUpperCase() + v.slice(1) : ""
+      }</${component}>`,
+  )
+  .join("\n")}
+\`\`\`
+
+<ThemeProvider theme="light">
+  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+    ${variantStories}
+  </div>
+</ThemeProvider>
+
+${
+  sizeStories
+    ? `## Sizes
+
+\`\`\`tsx
+${sizes!
+  .map(
+    (s) =>
+      `<${component} size="${s}" aria-label="${s}">${
+        component === "Button" ? s.toUpperCase() : ""
+      }</${component}>`,
+  )
+  .join("\n")}
+\`\`\`
+
+<ThemeProvider theme="light">
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    ${sizeStories}
+  </div>
+</ThemeProvider>
+`
+    : ""
+}
+
+## States
+
+\`\`\`tsx
+{/* Loading */}
+${component === "Button" ? `<Button variant="primary" loading aria-label="Saving">Saving...</Button>` : ""}
+
+{/* Disabled */}
+<${component} disabled aria-label="Disabled example">${
+    component === "Button" ? "Disabled" : ""
+  }</${component}>
+\`\`\`
+
+## Accessibility
+
+| Requirement | Status |
+|---|---|
+| Keyboard navigation | ${accessibilityContract.keyboard ? "✅ Required" : "⚠️ Optional"} |
+| Focus ring | ${accessibilityContract.focusRing ? "✅ Required" : "⚠️ Optional"} |
+| aria-label | ${accessibilityContract.ariaLabel === "required" ? "✅ Required" : "⚠️ Optional"} |
+${accessibilityContract.role ? `| ARIA role | \`${accessibilityContract.role}\` |` : ""}
+
+## Tokens
+
+The following CSS custom properties control the appearance of this component.
+Override these in \`design-system.rules.json\` under \`${component.toLowerCase()}.tokens\`.
+
+| Token | CSS Property |
+|---|---|
+${Object.entries(metadata.tokens)
+  .map(([name, cssVar]) => `| \`${name}\` | \`${cssVar}\` |`)
+  .join("\n")}
+
+## Usage
+
+\`\`\`tsx
+import { ${component} } from "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}";
+import "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}/tokens/light.css";
+
+// Basic usage
+<${component}${metadata.requiredProps.includes("aria-label") ? `\n  aria-label="${component}"` : ""}${
+    allowedVariants[0] ? `\n  variant="${allowedVariants[0]}"` : ""
+  }
+>
+  ${component === "Button" ? "Click me" : ""}
+</${component}>
+\`\`\`
+`;
+}
+
+// ─── Index / intro doc ────────────────────────────────────────────────────────
+
+export function generateIndexDoc(
+  config: DesignSystemConfig,
+  componentNames: string[],
+): string {
+  return `---
+title: ${config.meta.name}
+description: "${config.meta.description ?? `${config.meta.name} design system`}"
+---
+
+# ${config.meta.name}
+
+> ${config.meta.description ?? "A generated design system."}
+
+Generated by **dsforge** — config-driven, AI-native, publish-ready.
+
+## Installation
+
+\`\`\`bash
+npm install ${config.meta.npmScope ?? "@myorg"}/${config.meta.name}
+\`\`\`
+
+## Setup
+
+\`\`\`tsx
+// 1. Import base tokens (spacing, typography, radius, motion)
+import "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}/tokens/base.css";
+
+// 2. Import your theme (light or dark)
+import "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}/tokens/light.css";
+
+// 3. Wrap your app
+import { ThemeProvider } from "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}";
+
+function App() {
+  return (
+    <ThemeProvider theme="light">
+      {/* your app */}
+    </ThemeProvider>
+  );
+}
+\`\`\`
+
+## Components
+
+${componentNames.map((name) => `- [${name.charAt(0).toUpperCase() + name.slice(1)}](./${name}.mdx)`).join("\n")}
+
+## Themes
+
+${Object.keys(config.themes ?? {})
+  .map((t) => `- \`${t}\` — import \`tokens/${t}.css\``)
+  .join("\n")}
+
+## Token Architecture
+
+This design system uses a 3-tier token architecture:
+
+| Layer | Purpose | Example |
+|---|---|---|
+| **Global** | Raw values | \`blue-600: #2563eb\` |
+| **Semantic** | Intent-named | \`color-action: {global.blue-600}\` |
+| **Component** | Component-specific | \`button-bg: {semantic.color-action}\` |
+
+Themes override only the **semantic layer**, making brand swapping and dark mode a single file change.
+`;
+}
+
+// ─── Entry point ──────────────────────────────────────────────────────────────
+
+/**
+ * Generate all MDX documentation files.
+ */
+export function generateDocs(
+  config: DesignSystemConfig,
+  rules: RulesConfig,
+  metadataMap: Record<string, ComponentMetadata>,
+): DocFile[] {
+  const files: DocFile[] = [];
+
+  // index.mdx
+  files.push({
+    filename: "index.mdx",
+    content: generateIndexDoc(config, Object.keys(rules)),
+  });
+
+  // One .mdx per component
+  for (const componentName of Object.keys(rules)) {
+    const metadata = metadataMap[componentName];
+    if (!metadata) continue;
+    files.push({
+      filename: `${componentName}.mdx`,
+      content: generateComponentDoc(metadata, config),
+    });
+  }
+
+  return files;
+}

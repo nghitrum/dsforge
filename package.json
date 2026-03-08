@@ -1,41 +1,55 @@
 {
   "name": "dsforge",
   "version": "0.1.0",
-  "description": "AI-Native Design System Generator",
-  "main": "dist/index.js",
+  "description": "AI-native design system generator — tokens → components → docs → npm",
+  "keywords": [
+    "design-system",
+    "tokens",
+    "cli",
+    "react",
+    "typescript"
+  ],
+  "license": "MIT",
+  "type": "module",
   "bin": {
     "dsforge": "./dist/cli/index.js"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
   "scripts": {
-    "build": "tsc",
-    "dev": "ts-node src/cli/index.ts",
-    "start": "node dist/cli/index.js",
-    "lint": "eslint src --ext .ts",
+    "build": "tsc --project tsconfig.build.json",
+    "dev": "tsx src/cli/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "init": "ts-node src/cli/index.ts init",
-    "generate": "ts-node src/cli/index.ts generate",
-    "validate": "ts-node src/cli/index.ts validate",
-    "showcase": "ts-node src/cli/index.ts showcase"
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "chalk": "^5.3.0",
-    "commander": "^12.0.0",
+    "commander": "^12.1.0",
     "fs-extra": "^11.2.0",
-    "ora": "^8.0.1",
-    "prettier": "^3.2.5",
-    "zod": "^3.22.4"
+    "ora": "^8.1.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^20.11.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.5.0",
+    "vitest": "^1.6.0"
   },
-  "keywords": [
-    "design-system",
-    "codegen",
-    "cli",
-    "ai"
-  ],
-  "license": "MIT"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

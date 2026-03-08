@@ -103,7 +103,7 @@ ${themeCssDark}
 
     /* ── Reset + base ──────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 14px; }
+    html { font-size: 16px; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--color-bg-subtle, #f8fafc);

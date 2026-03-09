@@ -3,7 +3,7 @@
  * Generates a typed, accessible React Input with label, error, and helper text slots.
  */
 
-import type { DesignSystemConfig, ComponentRule } from "../../types/index";
+import type { DesignSystemConfig, ComponentRule } from "../../../types/index";
 
 export function generateInput(
   config: DesignSystemConfig,

@@ -5,39 +5,27 @@
  *   1. Read + validate config and rules
  *   2. Resolve all tokens
  *   3. Emit CSS custom property files (base.css + one per theme)
- *   4. Emit JS/TS token constants + Tailwind config
- *   5. Generate React components (Button, Input, Card, ThemeProvider)
+ *   4. Emit JS/TS token constants + Tailwind config  [via adapter]
+ *   5. Generate React components (Button, Input, Card, ThemeProvider) [via adapter]
  *   6. Generate AI-consumable metadata JSON
- *   7. Generate MDX documentation
- *   8. Emit package.json, tsconfig, README, CHANGELOG
+ *   7. Generate MDX documentation                    [via adapter]
+ *   8. Emit package.json, tsconfig, README, CHANGELOG [via adapter]
+ *   9. Generate showcase.html
  */
 
 import path from "node:path";
-import { readConfig, readRules, ensureDir, writeFile } from "../../utils/fs.js";
-import { resolveTokens } from "../../core/token-resolver.js";
-import { logger } from "../../utils/logger.js";
-import { validateConfig } from "./validate.js";
-import { generateCssFiles } from "../../generators/tokens/css-vars.js";
+import { readConfig, readRules, ensureDir, writeFile } from "../../utils/fs";
+import { resolveTokens } from "../../core/token-resolver";
+import { logger } from "../../utils/logger";
+import { validateConfig } from "./validate";
+import { generateCssFiles } from "../../generators/tokens/css-vars";
+import { generateMetadata } from "../../generators/metadata/generator";
 import {
-  emitJsTokens,
-  emitTailwindConfig,
-} from "../../generators/tokens/js-tokens.js";
-import { generateButton } from "../../generators/components/button.js";
-import { generateInput } from "../../generators/components/input.js";
-import { generateCard } from "../../generators/components/card.js";
-import {
-  generateThemeProvider,
-  generateComponentIndex,
-} from "../../generators/components/theme-provider.js";
-import { generateMetadata } from "../../generators/metadata/generator.js";
-import { generateDocs } from "../../generators/docs/mdx.js";
-import {
-  generatePackageJson,
   generateTsConfig,
-  generateReadme,
   generateChangelog,
-} from "../../generators/package/emitter.js";
-import type { DesignSystemConfig, RulesConfig } from "../../types/index.js";
+} from "../../generators/package/emitter";
+import { reactAdapter, REACT_COMPONENTS } from "../../adapters/react/index";
+import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 export interface GenerateOptions {
   watch?: boolean;
@@ -47,31 +35,23 @@ export interface GenerateOptions {
 // ─── Output directory layout ─────────────────────────────────────────────────
 //
 //  <cwd>/
-//  └── dist-ds/                   ← root of the generated publishable package
+//  └── dist-ds/
 //      ├── package.json
 //      ├── tsconfig.json
 //      ├── README.md
 //      ├── CHANGELOG.md
+//      ├── showcase.html
 //      ├── src/
-//      │   ├── index.ts           ← barrel of all components
+//      │   ├── index.ts
 //      │   ├── Button.tsx
 //      │   ├── Input.tsx
 //      │   ├── Card.tsx
 //      │   └── ThemeProvider.tsx
 //      ├── tokens/
-//      │   ├── base.css
-//      │   ├── light.css
-//      │   ├── dark.css
-//      │   ├── tokens.js
-//      │   └── tailwind.js
+//      │   ├── base.css  ├── light.css  ├── dark.css
+//      │   ├── tokens.js └── tailwind.js
 //      ├── metadata/
-//      │   ├── index.json
-//      │   ├── button.json
-//      │   └── ...
 //      └── docs/
-//          ├── index.mdx
-//          ├── button.mdx
-//          └── ...
 
 const OUT_DIR = "dist-ds";
 
@@ -147,19 +127,19 @@ export async function runGenerate(
     const tokensDir = path.join(outRoot, "tokens");
     await ensureDir(tokensDir);
 
+    // CSS custom properties — framework-agnostic
     const cssFiles = generateCssFiles(config, resolution);
     for (const { filename, content } of cssFiles) {
       await writeFile(path.join(tokensDir, filename), content);
       logger.dim(`  → tokens/${filename}`);
     }
 
-    const jsTokens = emitJsTokens(config, resolution);
-    await writeFile(path.join(tokensDir, "tokens.js"), jsTokens);
-    logger.dim(`  → tokens/tokens.js`);
-
-    const twConfig = emitTailwindConfig(config);
-    await writeFile(path.join(tokensDir, "tailwind.js"), twConfig);
-    logger.dim(`  → tokens/tailwind.js`);
+    // JS/Tailwind — adapter-owned
+    const tokenFiles = reactAdapter.generateTokenFiles(config, resolution);
+    for (const { filename, content } of tokenFiles) {
+      await writeFile(path.join(tokensDir, filename), content);
+      logger.dim(`  → tokens/${filename}`);
+    }
 
     logger.success(`Token files written`);
   }
@@ -170,40 +150,38 @@ export async function runGenerate(
     const srcDir = path.join(outRoot, "src");
     await ensureDir(srcDir);
 
-    const componentGenerators: Array<{
-      name: string;
-      generate: () => string;
-    }> = [
-      {
-        name: "Button",
-        generate: () => generateButton(config, rules["button"]),
-      },
-      { name: "Input", generate: () => generateInput(config, rules["input"]) },
-      { name: "Card", generate: () => generateCard(config, rules["card"]) },
-    ];
-
     const generatedNames: string[] = [];
 
-    for (const { name, generate } of componentGenerators) {
+    for (const componentName of REACT_COMPONENTS) {
       try {
-        const content = generate();
-        await writeFile(path.join(srcDir, `${name}.tsx`), content);
-        logger.dim(`  → src/${name}.tsx`);
-        generatedNames.push(name);
+        const { filename, content } = reactAdapter.generateComponent(
+          componentName,
+          config,
+          rules[componentName],
+        );
+        await writeFile(path.join(srcDir, filename), content);
+        logger.dim(`  → src/${filename}`);
+        generatedNames.push(
+          componentName.charAt(0).toUpperCase() + componentName.slice(1),
+        );
       } catch (err) {
-        logger.warn(`Could not generate ${name}: ${(err as Error).message}`);
+        logger.warn(
+          `Could not generate ${componentName}: ${(err as Error).message}`,
+        );
       }
     }
 
     // ThemeProvider
-    const themeProvider = generateThemeProvider(config);
-    await writeFile(path.join(srcDir, "ThemeProvider.tsx"), themeProvider);
-    logger.dim(`  → src/ThemeProvider.tsx`);
+    const { filename: tpFile, content: tpContent } =
+      reactAdapter.generateThemeProvider(config);
+    await writeFile(path.join(srcDir, tpFile), tpContent);
+    logger.dim(`  → src/${tpFile}`);
 
     // Barrel index
-    const barrelIndex = generateComponentIndex(config, generatedNames);
-    await writeFile(path.join(srcDir, "index.ts"), barrelIndex);
-    logger.dim(`  → src/index.ts`);
+    const { filename: idxFile, content: idxContent } =
+      reactAdapter.generateComponentIndex(config, generatedNames);
+    await writeFile(path.join(srcDir, idxFile), idxContent);
+    logger.dim(`  → src/${idxFile}`);
 
     logger.success(`${generatedNames.length} components generated`);
   }
@@ -229,22 +207,21 @@ export async function runGenerate(
     const docsDir = path.join(outRoot, "docs");
     await ensureDir(docsDir);
 
-    // Build metadata map for docs generator
     const metadataFiles = generateMetadata(config, rules, tokenCount);
     const metadataMap: Record<
       string,
-      import("../../generators/metadata/generator.js").ComponentMetadata
+      import("../../generators/metadata/generator").ComponentMetadata
     > = {};
     for (const { filename, content } of metadataFiles) {
       const name = filename.replace(".json", "");
       if (name !== "index") {
         metadataMap[name] = JSON.parse(
           content,
-        ) as import("../../generators/metadata/generator.js").ComponentMetadata;
+        ) as import("../../generators/metadata/generator").ComponentMetadata;
       }
     }
 
-    const docFiles = generateDocs(config, rules, metadataMap);
+    const docFiles = reactAdapter.generateDocs(config, rules, metadataMap);
     for (const { filename, content } of docFiles) {
       await writeFile(path.join(docsDir, filename), content);
       logger.dim(`  → docs/${filename}`);
@@ -253,51 +230,58 @@ export async function runGenerate(
     logger.success(`Docs written (${docFiles.length} files)`);
   }
 
-  // ── 8. Package manifest ──
+  // ── 8. Package files ──
   if (!only) {
-    logger.step("Writing package manifest...");
+    logger.step("Writing package files...");
+
     const componentNames = Object.keys(rules);
 
-    const pkgJson = generatePackageJson(config, componentNames);
-    await writeFile(path.join(outRoot, "package.json"), pkgJson);
-    logger.dim(`  → package.json`);
+    const { filename: pkgFile, content: pkgContent } =
+      reactAdapter.generatePackageManifest(config, componentNames);
+    await writeFile(path.join(outRoot, pkgFile), pkgContent);
+    logger.dim(`  → ${pkgFile}`);
 
     const tsConfig = generateTsConfig();
     await writeFile(path.join(outRoot, "tsconfig.json"), tsConfig);
     logger.dim(`  → tsconfig.json`);
 
-    const readme = generateReadme(config, componentNames);
-    await writeFile(path.join(outRoot, "README.md"), readme);
+    // README is framework-specific content — delegated to the adapter via
+    // generatePackageManifest; a separate README call isn't in the interface.
+    // Keep the pre-existing direct call for now until a generateReadme method
+    // is added to the interface in a future task.
+    const { generateReadme } = await import("../../generators/package/emitter");
+    await writeFile(
+      path.join(outRoot, "README.md"),
+      generateReadme(config, componentNames),
+    );
     logger.dim(`  → README.md`);
 
-    // Only write CHANGELOG if it doesn't already exist (avoid overwriting)
+    // Only seed CHANGELOG if it doesn't already exist
     const changelogPath = path.join(outRoot, "CHANGELOG.md");
-    const { default: fs } = await import("fs-extra");
-    if (!(await fs.pathExists(changelogPath))) {
+    const fsExtra = await import("fs-extra");
+    const fsE = fsExtra.default ?? fsExtra;
+    if (!(await fsE.pathExists(changelogPath))) {
       await writeFile(changelogPath, generateChangelog(config));
       logger.dim(`  → CHANGELOG.md (seeded)`);
     }
 
-    logger.success(`Package manifest written`);
+    logger.success(`Package files written`);
   }
 
-  // ── 8b. Showcase ──
+  // ── 9. Showcase ──
   logger.step("Generating showcase...");
-  const { generateShowcase } =
-    await import("../../generators/showcase/html.js");
+  const { generateShowcase } = await import("../../generators/showcase/html");
   const showcaseHtml = generateShowcase(config!, resolution);
-  const showcasePath = path.join(outRoot, "showcase.html");
-  await writeFile(showcasePath, showcaseHtml);
+  await writeFile(path.join(outRoot, "showcase.html"), showcaseHtml);
   logger.dim(`  → showcase.html`);
 
-  // Copy favicon
-  const fsExtra2 = await import("fs-extra");
-  const fsE2 = fsExtra2.default ?? fsExtra2;
+  const fsExtra = await import("fs-extra");
+  const fsE = fsExtra.default ?? fsExtra;
   const faviconSrc = path.join(cwd, "assets", "favicon.svg");
   const faviconDest = path.join(outRoot, "assets", "favicon.svg");
-  if (await fsE2.pathExists(faviconSrc)) {
-    await fsE2.ensureDir(path.dirname(faviconDest));
-    await fsE2.copy(faviconSrc, faviconDest, { overwrite: true });
+  if (await fsE.pathExists(faviconSrc)) {
+    await fsE.ensureDir(path.dirname(faviconDest));
+    await fsE.copy(faviconSrc, faviconDest, { overwrite: true });
   }
   logger.success("Showcase generated");
 

@@ -6,7 +6,7 @@
  * Variant types and governance rules are derived from design-system.rules.json.
  */
 
-import type { DesignSystemConfig, ComponentRule } from "../../types/index";
+import type { DesignSystemConfig, ComponentRule } from "../../../types/index";
 
 export function generateButton(
   config: DesignSystemConfig,

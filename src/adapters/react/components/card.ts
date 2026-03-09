@@ -3,7 +3,7 @@
  * Generates a composable Card with Header, Body, and Footer slots.
  */
 
-import type { DesignSystemConfig, ComponentRule } from "../../types/index";
+import type { DesignSystemConfig, ComponentRule } from "../../../types/index";
 
 export function generateCard(
   config: DesignSystemConfig,

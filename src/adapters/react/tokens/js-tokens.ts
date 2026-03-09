@@ -9,8 +9,8 @@
  * CSS-in-JS, React Native, or anywhere that needs raw values at runtime.
  */
 
-import type { DesignSystemConfig } from "../../types/index.js";
-import type { ResolutionResult } from "../../core/token-resolver.js";
+import type { DesignSystemConfig } from "../../../types/index";
+import type { ResolutionResult } from "../../../core/token-resolver";
 
 // Quote JS object keys that would be invalid unquoted (start with digit, contain hyphen etc.)
 function safeKey(k: string): string {

@@ -1,10 +1,10 @@
 import path from "node:path";
 import fs from "fs-extra";
-import { logger } from "../../utils/logger.js";
-import { projectExists } from "../../utils/fs.js";
-import { CONFIG_FILENAME, RULES_FILENAME } from "../../utils/fs.js";
+import { logger } from "../../utils/logger";
+import { projectExists } from "../../utils/fs";
+import { CONFIG_FILENAME, RULES_FILENAME } from "../../utils/fs";
 import { confirm } from "../prompt";
-import type { DesignSystemConfig, RulesConfig } from "../../types/index.js";
+import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 // ─── Preset density maps ──────────────────────────────────────────────────────
 

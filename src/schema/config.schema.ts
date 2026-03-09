@@ -228,7 +228,8 @@ export const LayoutConfigSchema = z.object({
 export const ThemesConfigSchema = z
   .record(z.string(), z.record(z.string(), RawValueSchema))
   .describe(
-    "Named themes. Each is a flat map of semantic token overrides. " +
+    "Named themes. " +
+      "Each is a flat map of semantic token overrides. " +
       "Keys become CSS custom property names; values are concrete values.",
   );
 
@@ -246,6 +247,43 @@ export const CustomizationConfigSchema = z.object({
   extends: z.string().nullable().optional(),
   overrides: z.record(z.string(), RawValueSchema).optional(),
 });
+
+// ─── Output ──────────────────────────────────────────────────────────────────
+
+/**
+ * The set of framework adapter IDs the pipeline knows about.
+ * Adding a new adapter here is the only schema change needed when a
+ * new framework target ships.
+ */
+export const SUPPORTED_TARGETS = ["react"] as const;
+export type OutputTarget = (typeof SUPPORTED_TARGETS)[number];
+
+export const OutputConfigSchema = z
+  .object({
+    /**
+     * The framework adapter to use when generating component files.
+     *
+     * @default "react"
+     *
+     * Supported values: "react"
+     * Future values: "vue", "svelte", "angular", "react-native"
+     *
+     * An unknown value here will fail validation with an actionable message
+     * rather than silently generating incorrect output.
+     */
+    target: z
+      .enum(SUPPORTED_TARGETS, {
+        errorMap: () => ({
+          message:
+            `output.target must be one of: ${SUPPORTED_TARGETS.join(", ")}. ` +
+            `Got an unsupported value. ` +
+            `If you are trying to use a framework that is not yet supported, ` +
+            `remove the output.target field or set it to "react".`,
+        }),
+      })
+      .default("react"),
+  })
+  .optional();
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -287,6 +325,7 @@ export const DesignSystemConfigSchema = z.object({
   layout: LayoutConfigSchema.optional(),
   philosophy: PhilosophyConfigSchema.optional(),
   customization: CustomizationConfigSchema.optional(),
+  output: OutputConfigSchema,
 });
 
 // ─── Rules Schema ─────────────────────────────────────────────────────────────

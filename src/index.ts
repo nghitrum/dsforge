@@ -24,20 +24,20 @@ export {
 export {
   emitJsTokens,
   emitTailwindConfig,
-} from "./generators/tokens/js-tokens";
+} from "./adapters/react/tokens/js-tokens";
 
 // ─── Component generators ────────────────────────────────────────────────────
-export { generateButton } from "./generators/components/button";
-export { generateInput } from "./generators/components/input";
-export { generateCard } from "./generators/components/card";
+export { generateButton } from "./adapters/react/components/button";
+export { generateInput } from "./adapters/react/components/input";
+export { generateCard } from "./adapters/react/components/card";
 export {
   generateThemeProvider,
   generateComponentIndex,
-} from "./generators/components/theme-provider";
+} from "./adapters/react/theme-provider";
 
 // ─── Metadata + docs generators ──────────────────────────────────────────────
 export { generateMetadata } from "./generators/metadata/generator";
-export { generateDocs } from "./generators/docs/mdx";
+export { generateDocs } from "./adapters/react/docs/mdx";
 
 // ─── Package emitter ─────────────────────────────────────────────────────────
 export {
@@ -76,6 +76,8 @@ export type {
   LayoutConfig,
   ThemesConfig,
   MetaConfig,
+  OutputConfig,
+  OutputTarget,
   ResolvedTokenMap,
   ResolvedConfig,
   ValidationResult,
@@ -86,9 +88,18 @@ export type {
   TokenResolutionError,
 } from "./types/index";
 
+// ─── Adapter types ────────────────────────────────────────────────────────────
+export type {
+  FrameworkAdapter,
+  GeneratedFile,
+  AdapterRegistry,
+} from "./adapters/types";
+
 // ─── Zod schemas ─────────────────────────────────────────────────────────────
 export {
   DesignSystemConfigSchema,
+  OutputConfigSchema,
+  SUPPORTED_TARGETS,
   TokenLayersSchema,
   ColorConfigSchema,
   TypographyConfigSchema,

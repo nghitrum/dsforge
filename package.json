@@ -34,7 +34,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "purge": "rm -rf dist-ds design-system.config.json design-system.rules.json"
   },
   "dependencies": {
     "chalk": "^5.3.0",

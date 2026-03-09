@@ -1,25 +1,17 @@
-// ─── Token Reference ─────────────────────────────────────────────────────────
-// A string of the form "{layer.key}" or "{path.to.nested}" is a token reference.
-// Raw values (hex, px, numbers) are plain strings.
+// ─── Primitives ──────────────────────────────────────────────────────────────
 
-/** A raw CSS/design value: hex, px, number, CSS shadow string, etc. */
 export type RawValue = string | number;
 
-/** An unresolved token reference, e.g. "{global.blue-600}" */
-export type TokenRef = `{${string}}`;
-
-/** Either a raw value or a reference to be resolved */
-export type TokenValue = RawValue | TokenRef;
+/**
+ * TokenValue: either a raw value or a "{layer.key}" reference string.
+ * The token resolver validates and expands references at runtime.
+ */
+export type TokenValue = RawValue;
 
 // ─── Token Layers ─────────────────────────────────────────────────────────────
 
-/** Layer 1: primitive, raw values only. No references allowed. */
 export type GlobalTokens = Record<string, RawValue>;
-
-/** Layer 2: intent-named tokens. May reference global tokens. */
 export type SemanticTokens = Record<string, TokenValue>;
-
-/** Layer 3: component-specific. May reference global or semantic. */
 export type ComponentTokens = Record<string, TokenValue>;
 
 export interface TokenLayers {
@@ -49,7 +41,6 @@ export interface ColorText {
   secondary?: TokenValue;
   disabled?: TokenValue;
   inverse?: TokenValue;
-  /** Text on top of a colored background, e.g. button label */
   onColor?: TokenValue;
 }
 
@@ -259,6 +250,26 @@ export interface CustomizationConfig {
   overrides?: Record<string, RawValue>;
 }
 
+// ─── Output ──────────────────────────────────────────────────────────────────
+
+/**
+ * The set of supported adapter target identifiers.
+ * Kept in sync with SUPPORTED_TARGETS in src/schema/config.schema.ts.
+ */
+export type OutputTarget = "react";
+
+export interface OutputConfig {
+  /**
+   * The framework adapter to use when generating component files.
+   *
+   * @default "react"
+   *
+   * Supported values: "react"
+   * Future values: "vue", "svelte", "angular", "react-native"
+   */
+  target?: OutputTarget;
+}
+
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 export interface MetaConfig {
@@ -287,6 +298,8 @@ export interface DesignSystemConfig {
   layout?: LayoutConfig;
   philosophy?: PhilosophyConfig;
   customization?: CustomizationConfig;
+  /** Output adapter configuration. Omitting this field defaults to React. */
+  output?: OutputConfig;
 }
 
 // ─── Rules ───────────────────────────────────────────────────────────────────

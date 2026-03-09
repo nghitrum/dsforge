@@ -6,7 +6,7 @@
  * Content is derived from metadata so docs always stay in sync.
  */
 
-import type { DesignSystemConfig, RulesConfig } from "../../types/index";
+import type { DesignSystemConfig, RulesConfig } from "../../../types/index";
 import type { ComponentMetadata } from "../metadata/generator";
 
 export interface DocFile {

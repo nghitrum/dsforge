@@ -82,9 +82,15 @@ program.exitOverride((err) => {
   process.exit(err.exitCode);
 });
 
-const hasSubcommand = process.argv.slice(2).some((arg) => !arg.startsWith("-"));
+const args = process.argv.slice(2);
+const hasSubcommand = args.some((arg) => !arg.startsWith("-"));
+const hasFlag =
+  args.includes("--version") ||
+  args.includes("--help") ||
+  args.includes("-V") ||
+  args.includes("-h");
 
-if (hasSubcommand) {
+if (hasSubcommand || hasFlag) {
   program.parse(process.argv);
 } else {
   runMenu();

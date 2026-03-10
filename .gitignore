@@ -60,3 +60,7 @@ design-system.rules.json
 # ─── Local settings ─────────────
 .vscode/
 .claude
+
+# ─── AI ───────────────────────────────────────────────────────────────────
+*.claude
+claude.md

@@ -30,4 +30,4 @@ jobs:
           npm version patch -m "chore: bump version to %s [skip ci]"
           git push
 
-      - run: npm publish
+      - run: npm publish --access=public

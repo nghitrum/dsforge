@@ -1,5 +1,7 @@
 # dsforge
 
+[![CI](https://github.com/nghitrum/dsforge/actions/workflows/ci.yml/badge.svg)](https://github.com/nghitrum/dsforge/actions/workflows/ci.yml)
+
 Your design tokens live in Figma. Your components drift from the spec. Your docs are six sprints out of date. dsforge fixes all three with one config file.
 
 ![dsforge showcase](docs/showcase.png)

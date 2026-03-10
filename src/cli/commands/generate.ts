@@ -14,7 +14,13 @@
  */
 
 import path from "node:path";
-import { readConfig, readRules, ensureDir, writeFile } from "../../utils/fs";
+import {
+  readConfig,
+  readRules,
+  ensureDir,
+  writeFile,
+  CONFIG_FILENAME,
+} from "../../utils/fs";
 import { resolveTokens } from "../../core/token-resolver";
 import { logger } from "../../utils/logger";
 import { validateConfig } from "./validate";
@@ -30,6 +36,20 @@ import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 export interface GenerateOptions {
   watch?: boolean;
   only?: string;
+  debug?: boolean;
+}
+
+function fatal(
+  message: string,
+  hint: string,
+  err: unknown,
+  debug: boolean,
+): never {
+  logger.error(`[dsforge] ${message} — ${hint}`);
+  if (debug && err instanceof Error && err.stack) {
+    console.error(err.stack);
+  }
+  process.exit(1);
 }
 
 // ─── Output directory layout ─────────────────────────────────────────────────
@@ -72,9 +92,12 @@ export async function runGenerate(
     config = await readConfig(cwd);
     rules = await readRules(cwd);
   } catch (err) {
-    logger.error((err as Error).message);
-    process.exit(1);
-    return;
+    fatal(
+      "Could not read config",
+      `Check that ${CONFIG_FILENAME} exists and is valid JSON — run "dsforge init" to create one`,
+      err,
+      options.debug ?? false,
+    );
   }
 
   // ── 2. Pre-flight validate ──
@@ -85,7 +108,7 @@ export async function runGenerate(
   if (errors.length > 0) {
     logger.blank();
     logger.error(
-      `Config has ${errors.length} error(s). Fix them before generating.`,
+      `Config has ${errors.length} error(s) — fix them before generating`,
     );
     logger.dim(`Run "dsforge validate" for the full report.`);
     logger.blank();
@@ -107,7 +130,17 @@ export async function runGenerate(
 
   // ── 3. Resolve tokens ──
   logger.step("Resolving tokens...");
-  const resolution = resolveTokens(config);
+  let resolution: ReturnType<typeof resolveTokens>;
+  try {
+    resolution = resolveTokens(config!);
+  } catch (err) {
+    fatal(
+      "Token resolution failed",
+      "Check your config for circular references or missing token values",
+      err,
+      options.debug ?? false,
+    );
+  }
 
   for (const w of resolution.warnings) {
     logger.warn(w.message);
@@ -166,7 +199,7 @@ export async function runGenerate(
         );
       } catch (err) {
         logger.warn(
-          `Could not generate ${componentName}: ${(err as Error).message}`,
+          `[dsforge] Could not generate ${componentName} — ${(err as Error).message}`,
         );
       }
     }

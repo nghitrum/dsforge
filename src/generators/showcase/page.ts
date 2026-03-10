@@ -1,7 +1,15 @@
 import type { ComponentDef } from "./types";
 import { esc } from "./types";
 
-export function buildComponentPage(def: ComponentDef): string {
+const lockedPanel = (label: string) => `
+  <div class="locked-panel">
+    <div class="locked-icon">⊘</div>
+    <div class="locked-title">${label} — dsforge Pro</div>
+    <p class="locked-desc">This tab is available with a dsforge Pro license.</p>
+    <p class="locked-hint">Set the <code>DSFORGE_KEY</code> environment variable to unlock.</p>
+  </div>`;
+
+export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
   const tabId = (tab: string) => `${def.id}-tab-${tab}`;
   const panelId = (tab: string) => `${def.id}-panel-${tab}`;
 
@@ -99,11 +107,21 @@ export function buildComponentPage(def: ComponentDef): string {
 
   // ── Assemble tabs ─────────────────────────────────────────────────────────
   const tabs = [
-    { id: "overview", label: "Overview", content: overviewHtml },
-    { id: "props", label: "Props", content: propsTable },
-    { id: "examples", label: "Examples", content: examplesHtml },
-    { id: "accessibility", label: "Accessibility", content: a11yHtml },
-    { id: "ai-metadata", label: "AI Metadata", content: aiHtml },
+    { id: "overview", label: "Overview", content: overviewHtml, locked: false },
+    { id: "props", label: "Props", content: propsTable, locked: false },
+    { id: "examples", label: "Examples", content: examplesHtml, locked: false },
+    {
+      id: "accessibility",
+      label: "Accessibility",
+      content: isPro ? a11yHtml : lockedPanel("Accessibility"),
+      locked: !isPro,
+    },
+    {
+      id: "ai-metadata",
+      label: "AI Metadata",
+      content: isPro ? aiHtml : lockedPanel("AI Metadata"),
+      locked: !isPro,
+    },
   ];
 
   return `
@@ -113,13 +131,14 @@ export function buildComponentPage(def: ComponentDef): string {
           .map(
             (t, i) => `
           <button
-            class="comp-tab${i === 0 ? " active" : ""}"
+            class="comp-tab${i === 0 ? " active" : ""}${t.locked ? " locked" : ""}"
             id="${tabId(t.id)}"
             role="tab"
             aria-selected="${i === 0}"
             aria-controls="${panelId(t.id)}"
-            onclick="switchTab('${def.id}', '${t.id}', this)"
-          >${esc(t.label)}</button>`,
+            onclick="${t.locked ? "return false" : `switchTab('${def.id}', '${t.id}', this)`}"
+            ${t.locked ? 'title="Unlock with dsforge Pro"' : ""}
+          >${esc(t.label)}${t.locked ? " &#x1F512;" : ""}</button>`,
           )
           .join("")}
       </div>

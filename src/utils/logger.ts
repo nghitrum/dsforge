@@ -1,6 +1,20 @@
 import chalk from "chalk";
 
 export const logger = {
+  // ─── Wordmark ────────────────────────────────────────────────────────
+  wordmark(version?: string): void {
+    const ver = version ? chalk.dim(` v${version}`) : "";
+    console.log();
+    console.log(
+      "  " +
+        chalk.bold.white("dsforge") +
+        ver +
+        "  " +
+        chalk.dim("design system tooling"),
+    );
+    console.log(chalk.dim("  " + "─".repeat(44)));
+  },
+
   // ─── Info / success ─────────────────────────────────────────────────
   info(message: string): void {
     console.log(chalk.cyan("  ℹ"), message);
@@ -57,16 +71,18 @@ export const logger = {
   score(score: number, max: number): void {
     const pct = score / max;
     const color =
-      pct >= 0.8 ? chalk.green
-      : pct >= 0.5 ? chalk.yellow
-      : chalk.red;
+      pct >= 0.8 ? chalk.green : pct >= 0.5 ? chalk.yellow : chalk.red;
 
     const filled = Math.round(pct * 20);
     const bar = color("█".repeat(filled)) + chalk.dim("░".repeat(20 - filled));
 
     console.log();
     console.log(
-      "  " + bar + "  " + color.bold(`${score}/${max}`) + chalk.dim(" health score"),
+      "  " +
+        bar +
+        "  " +
+        color.bold(`${score}/${max}`) +
+        chalk.dim(" health score"),
     );
     console.log();
   },

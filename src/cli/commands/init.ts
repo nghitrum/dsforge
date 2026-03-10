@@ -1,9 +1,10 @@
 import path from "node:path";
 import fs from "fs-extra";
+import chalk from "chalk";
 import { logger } from "../../utils/logger";
 import { projectExists } from "../../utils/fs";
 import { CONFIG_FILENAME, RULES_FILENAME } from "../../utils/fs";
-import { confirm } from "../prompt";
+import { ask, confirm } from "../prompt";
 import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 // ─── Preset density maps ──────────────────────────────────────────────────────
@@ -397,56 +398,80 @@ export interface InitOptions {
   force?: boolean;
 }
 
+const VALID_PRESETS = ["compact", "comfortable", "spacious"] as const;
+
 export async function runInit(
   cwd: string,
   options: InitOptions,
 ): Promise<void> {
+  logger.wordmark();
   logger.blank();
-  logger.section("dsforge init");
 
   // Guard against overwriting existing project
   if (!options.force && (await projectExists(cwd))) {
-    logger.blank();
     logger.warn("A design system config already exists in this directory.");
     const overwrite = await confirm("Overwrite existing config?");
     if (!overwrite) {
-      logger.dim("  Cancelled.");
+      logger.dim("Cancelled.");
       logger.blank();
       return;
     }
+    logger.blank();
   }
 
-  // Resolve options
-  const rawName = options.name ?? path.basename(cwd);
+  // ── Resolve name ──
+  let rawName: string;
+  if (options.name) {
+    rawName = options.name;
+  } else {
+    const defaultName = path.basename(cwd);
+    const answer = await ask(
+      `  Package name ${chalk.dim(`(${defaultName})`)} `,
+    );
+    rawName = answer.trim() || defaultName;
+  }
   const name = rawName.replace(/\s+/g, "-").toLowerCase();
 
-  const preset = (
-    ["compact", "comfortable", "spacious"].includes(options.preset ?? "")
-      ? options.preset
-      : "comfortable"
-  ) as "compact" | "comfortable" | "spacious";
+  // ── Resolve preset ──
+  let preset: (typeof VALID_PRESETS)[number];
+  if (options.preset && VALID_PRESETS.includes(options.preset as never)) {
+    preset = options.preset as (typeof VALID_PRESETS)[number];
+  } else {
+    const answer = await ask(
+      `  Density preset ${chalk.dim("(compact | comfortable | spacious)")} ${chalk.dim("[comfortable]")} `,
+    );
+    const trimmed = answer.trim().toLowerCase();
+    preset = VALID_PRESETS.includes(trimmed as never)
+      ? (trimmed as (typeof VALID_PRESETS)[number])
+      : "comfortable";
+  }
 
-  logger.step("Creating config", `preset: ${preset}`);
-  logger.step("Package name", name);
   logger.blank();
 
-  // Build and write config
+  // ── Build and write ──
   const config = buildInitialConfig(name, preset);
   const rules = buildInitialRules();
 
   await fs.writeJson(path.join(cwd, CONFIG_FILENAME), config, { spaces: 2 });
-  logger.success(`${CONFIG_FILENAME} created`);
+  logger.success(`${CONFIG_FILENAME}`);
 
   await fs.writeJson(path.join(cwd, RULES_FILENAME), rules, { spaces: 2 });
-  logger.success(`${RULES_FILENAME} created`);
+  logger.success(`${RULES_FILENAME}`);
 
-  // Summary
+  // ── Summary ──
   logger.blank();
-  logger.dim("Next steps:");
+  logger.info(`Package: ${name}  ·  Preset: ${preset}`);
+  logger.blank();
+  logger.dim("What was created:");
   logger.dim(
-    `  1. Edit ${CONFIG_FILENAME} — replace placeholder colors with your brand values`,
+    `  ${CONFIG_FILENAME}  — token architecture, themes, typography, spacing`,
   );
-  logger.dim(`  2. Run "dsforge validate" to check config health`);
-  logger.dim(`  3. Run "dsforge generate" to generate components + tokens`);
+  logger.dim(`  ${RULES_FILENAME}  — component governance rules`);
+  logger.blank();
+  logger.dim("Next:");
+  logger.dim(
+    `  1. Edit ${CONFIG_FILENAME} — replace the placeholder brand colors`,
+  );
+  logger.dim(`  2. dsforge generate`);
   logger.blank();
 }

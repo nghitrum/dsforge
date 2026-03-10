@@ -37,10 +37,13 @@ program
   .description("Generate tokens, components, metadata and docs")
   .option("-w, --watch", "Re-generate on config changes", false)
   .option("--only <target>", "tokens | components | metadata | docs")
-  .action(async (options: { watch?: boolean; only?: string }) => {
-    await runGenerate(process.cwd(), options);
-    process.exit(0);
-  });
+  .option("--debug", "Print full stack traces on error", false)
+  .action(
+    async (options: { watch?: boolean; only?: string; debug?: boolean }) => {
+      await runGenerate(process.cwd(), options);
+      process.exit(0);
+    },
+  );
 
 program
   .command("validate")

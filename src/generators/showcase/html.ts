@@ -16,6 +16,7 @@
 import type { DesignSystemConfig } from "../../types/index";
 import type { ResolutionResult } from "../../core/token-resolver";
 import { esc } from "./types";
+import { isProUnlocked } from "../../lib/license";
 import {
   buildColorSection,
   buildTypographySection,
@@ -57,6 +58,8 @@ export function generateShowcase(
 
   const allItems = [...foundationItems, ...componentItems];
 
+  const isPro = isProUnlocked();
+
   const sections: Record<string, string> = {
     colors: buildColorSection(config, tokens),
     typography: buildTypographySection(config),
@@ -64,9 +67,9 @@ export function generateShowcase(
     radius: buildRadiusSection(config),
     elevation: buildElevationSection(config),
     motion: buildMotionSection(config),
-    button: buildComponentPage(buttonDef(config, tokens)),
-    input: buildComponentPage(inputDef(config, tokens)),
-    card: buildComponentPage(cardDef(config, tokens)),
+    button: buildComponentPage(buttonDef(config, tokens), isPro),
+    input: buildComponentPage(inputDef(config, tokens), isPro),
+    card: buildComponentPage(cardDef(config, tokens), isPro),
   };
 
   const flatTokens = Object.fromEntries(
@@ -352,6 +355,21 @@ ${themeCssDark}
     .ai-meta-intro code { font-family: monospace; font-size: 12px; color: var(--color-action, #2563eb); }
     .ai-guidance-list { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
     .ai-guidance-list li { font-size: 13px; color: var(--color-text-secondary, #64748b); line-height: 1.6; }
+
+    /* ── Locked tabs ──────────────────────────────────── */
+    .comp-tab.locked { opacity: 0.45; cursor: default; }
+    .comp-tab.locked:hover { color: var(--color-text-secondary, #64748b); }
+    .locked-panel {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 64px 32px; text-align: center;
+      border: 1px dashed var(--color-border-default, #e2e8f0); border-radius: 10px;
+      background: var(--color-bg-subtle, #f8fafc);
+    }
+    .locked-icon { font-size: 28px; color: var(--color-text-secondary, #64748b); margin-bottom: 12px; }
+    .locked-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary, #0f172a); margin-bottom: 8px; }
+    .locked-desc { font-size: 13px; color: var(--color-text-secondary, #64748b); max-width: 360px; line-height: 1.6; margin-bottom: 6px; }
+    .locked-hint { font-size: 12px; color: var(--color-text-secondary, #64748b); font-family: monospace; }
+    .locked-hint code { background: var(--color-bg-overlay, #f1f5f9); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-border-default, #e2e8f0); }
 
     /* ── Component primitives ─────────────────────────── */
     .ds-btn { border: none; cursor: pointer; font-size: 14px; font-weight: 500; padding: 8px 16px; transition: filter 120ms; }

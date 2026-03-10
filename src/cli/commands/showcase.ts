@@ -1,6 +1,6 @@
 import path from "node:path";
+import { spawn } from "node:child_process";
 import fs from "fs-extra";
-import { execSync } from "node:child_process";
 import { logger } from "../../utils/logger";
 
 export async function runShowcase(cwd: string): Promise<void> {
@@ -19,11 +19,20 @@ export async function runShowcase(cwd: string): Promise<void> {
   try {
     const cmd =
       process.platform === "darwin"
-        ? `open "${outPath}"`
+        ? "open"
         : process.platform === "win32"
-          ? `start "" "${outPath}"`
-          : `xdg-open "${outPath}"`;
-    execSync(cmd);
+          ? "cmd"
+          : "xdg-open";
+
+    const args =
+      process.platform === "win32" ? ["/c", "start", "", outPath] : [outPath];
+
+    const child = spawn(cmd, args, {
+      detached: true,
+      stdio: "ignore",
+    });
+    child.unref();
+
     logger.success(`Opened dist-ds/showcase.html`);
   } catch {
     logger.hint("Could not auto-open. Open manually:", `dist-ds/showcase.html`);

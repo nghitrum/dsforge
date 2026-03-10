@@ -86,6 +86,65 @@ const COMPONENT_DEFAULTS: Record<string, Partial<ComponentMetadata>> = {
     layoutImpact: "block",
     destructive: false,
   },
+  badge: {
+    description:
+      "Compact label for status, categories, or counts. Display-only — not interactive.",
+    role: "status-indicator",
+    hierarchyLevel: "utility",
+    interactionModel: "none",
+    layoutImpact: "inline",
+    destructive: false,
+    sizes: ["sm", "md", "lg"],
+  },
+  checkbox: {
+    description:
+      "Binary toggle for boolean values. Supports indeterminate state for partial selections.",
+    role: "data-entry",
+    hierarchyLevel: "primary",
+    interactionModel: "synchronous",
+    layoutImpact: "inline",
+    destructive: false,
+    sizes: ["sm", "md", "lg"],
+  },
+  radio: {
+    description:
+      "Single selection within a mutually exclusive group. Always use inside RadioGroup.",
+    role: "data-entry",
+    hierarchyLevel: "primary",
+    interactionModel: "synchronous",
+    layoutImpact: "inline",
+    destructive: false,
+    sizes: ["sm", "md", "lg"],
+  },
+  select: {
+    description:
+      "Dropdown picker for selecting from a list of options. Wraps native <select> for accessibility.",
+    role: "data-entry",
+    hierarchyLevel: "primary",
+    interactionModel: "synchronous",
+    layoutImpact: "block",
+    destructive: false,
+    sizes: ["sm", "md", "lg"],
+  },
+  toast: {
+    description:
+      "Feedback messages for user actions. Alert is inline; Toast is an overlay with auto-dismiss.",
+    role: "feedback",
+    hierarchyLevel: "utility",
+    interactionModel: "asynchronous",
+    layoutImpact: "overlay",
+    destructive: false,
+  },
+  spinner: {
+    description:
+      "Loading indicator for async operations. Use with an accessible label for screen readers.",
+    role: "loading-indicator",
+    hierarchyLevel: "utility",
+    interactionModel: "asynchronous",
+    layoutImpact: "inline",
+    destructive: false,
+    sizes: ["xs", "sm", "md", "lg", "xl"],
+  },
 };
 
 function buildComponentMetadata(
@@ -167,6 +226,12 @@ function buildOptionalProps(
       "onChange",
     ],
     card: ["maxWidth", "noPadding", "onClick"],
+    badge: ["size", "dot"],
+    checkbox: ["size", "disabled", "label", "helperText", "indeterminate", "checked", "onChange"],
+    radio: ["size", "disabled", "label", "value", "onChange"],
+    select: ["size", "disabled", "label", "helperText", "errorMessage", "placeholder", "options", "fullWidth", "onChange"],
+    toast: ["variant", "title", "dismissible", "duration", "onDismiss"],
+    spinner: ["size", "variant", "label"],
   };
   return [...(byComponent[componentName.toLowerCase()] ?? []), ...common];
 }

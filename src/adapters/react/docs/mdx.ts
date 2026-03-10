@@ -7,7 +7,7 @@
  */
 
 import type { DesignSystemConfig, RulesConfig } from "../../../types/index";
-import type { ComponentMetadata } from "../metadata/generator";
+import type { ComponentMetadata } from "../../../generators/metadata/generator";
 
 export interface DocFile {
   filename: string;
@@ -28,23 +28,19 @@ export function generateComponentDoc(
     accessibilityContract,
   } = metadata;
 
+  // Components that render inline children as their label (text content inside the tag)
+  const inlineContentByComponent: Record<string, (token: string) => string> = {
+    Button: (v) => v.charAt(0).toUpperCase() + v.slice(1),
+  };
+  const childContent = inlineContentByComponent[component] ?? (() => "");
+
   const variantStories = allowedVariants
-    .map(
-      (v) =>
-        `<${component} variant="${v}" aria-label="${v} example">${
-          component === "Button" ? v.charAt(0).toUpperCase() + v.slice(1) : ""
-        }</${component}>`,
-    )
+    .map((v) => `<${component} variant="${v}" aria-label="${v} example">${childContent(v)}</${component}>`)
     .join("\n");
 
   const sizeStories = sizes
     ? sizes
-        .map(
-          (s) =>
-            `<${component} size="${s}" aria-label="${s} size example">${
-              component === "Button" ? s.toUpperCase() : ""
-            }</${component}>`,
-        )
+        .map((s) => `<${component} size="${s}" aria-label="${s} size example">${childContent(s)}</${component}>`)
         .join("\n")
     : "";
 
@@ -81,12 +77,7 @@ All allowed variants as defined in \`design-system.rules.json\`:
 
 \`\`\`tsx
 ${allowedVariants
-  .map(
-    (v) =>
-      `<${component} variant="${v}" aria-label="${v}">${
-        component === "Button" ? v.charAt(0).toUpperCase() + v.slice(1) : ""
-      }</${component}>`,
-  )
+  .map((v) => `<${component} variant="${v}" aria-label="${v}">${childContent(v)}</${component}>`)
   .join("\n")}
 \`\`\`
 
@@ -101,14 +92,7 @@ ${
     ? `## Sizes
 
 \`\`\`tsx
-${sizes!
-  .map(
-    (s) =>
-      `<${component} size="${s}" aria-label="${s}">${
-        component === "Button" ? s.toUpperCase() : ""
-      }</${component}>`,
-  )
-  .join("\n")}
+${sizes!.map((s) => `<${component} size="${s}" aria-label="${s}">${childContent(s)}</${component}>`).join("\n")}
 \`\`\`
 
 <ThemeProvider theme="light">
@@ -123,13 +107,8 @@ ${sizes!
 ## States
 
 \`\`\`tsx
-{/* Loading */}
-${component === "Button" ? `<Button variant="primary" loading aria-label="Saving">Saving...</Button>` : ""}
-
-{/* Disabled */}
-<${component} disabled aria-label="Disabled example">${
-    component === "Button" ? "Disabled" : ""
-  }</${component}>
+${component === "Button" ? `{/* Loading */}\n<Button variant="primary" loading aria-label="Saving">Saving...</Button>\n\n` : ""}{/* Disabled */}
+<${component} disabled aria-label="Disabled example">${childContent("disabled")}</${component}>
 \`\`\`
 
 ## Accessibility
@@ -163,7 +142,7 @@ import "${config.meta.npmScope ?? "@myorg"}/${config.meta.name}/tokens/light.css
     allowedVariants[0] ? `\n  variant="${allowedVariants[0]}"` : ""
   }
 >
-  ${component === "Button" ? "Click me" : ""}
+  ${childContent(allowedVariants[0] ?? "")}
 </${component}>
 \`\`\`
 `;

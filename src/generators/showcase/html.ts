@@ -1,16 +1,11 @@
 /**
  * Showcase generator — entry point.
  *
- * Imports section builders and component definitions from sibling modules,
- * then assembles the final self-contained HTML file.
- *
- * Module map:
+ * Assembles the final self-contained HTML file from:
+ *   registry.ts               — all component entries (add new components here)
  *   types.ts                  — shared interfaces + helpers
  *   foundations.ts            — color / typography / spacing / radius / elevation / motion
  *   page.ts                   — tab page renderer (buildComponentPage)
- *   components/button.ts      — Button definition
- *   components/input.ts       — Input definition
- *   components/card.ts        — Card definition
  */
 
 import type { DesignSystemConfig } from "../../types/index";
@@ -26,9 +21,7 @@ import {
   buildMotionSection,
 } from "./foundations";
 import { buildComponentPage } from "./page";
-import { buttonDef } from "./components/button";
-import { inputDef } from "./components/input";
-import { cardDef } from "./components/card";
+import { SHOWCASE_COMPONENTS } from "./registry";
 
 // ─── generateShowcase ─────────────────────────────────────────────────────────
 
@@ -50,11 +43,7 @@ export function generateShowcase(
     { id: "motion", label: "Motion" },
   ];
 
-  const componentItems = [
-    { id: "button", label: "Button" },
-    { id: "input", label: "Input" },
-    { id: "card", label: "Card" },
-  ];
+  const componentItems = SHOWCASE_COMPONENTS.map(({ id, label }) => ({ id, label }));
 
   const allItems = [...foundationItems, ...componentItems];
 
@@ -67,9 +56,12 @@ export function generateShowcase(
     radius: buildRadiusSection(config),
     elevation: buildElevationSection(config),
     motion: buildMotionSection(config),
-    button: buildComponentPage(buttonDef(config, tokens), isPro),
-    input: buildComponentPage(inputDef(config, tokens), isPro),
-    card: buildComponentPage(cardDef(config, tokens), isPro),
+    ...Object.fromEntries(
+      SHOWCASE_COMPONENTS.map((entry) => [
+        entry.id,
+        buildComponentPage(entry.def(config, tokens), isPro),
+      ]),
+    ),
   };
 
   const flatTokens = Object.fromEntries(
@@ -382,6 +374,10 @@ ${themeCssDark}
     .ds-card-header { padding: 12px 14px; font-size: 14px; font-weight: 600; }
     .ds-card-body   { padding: 12px 14px; }
     .ds-card-footer { padding: 10px 14px; display: flex; justify-content: flex-end; }
+
+    /* ── Spinner animation ────────────────────────────── */
+    @keyframes dsforge-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { @keyframes dsforge-spin { to { transform: none; } } }
   </style>
 </head>
 <body>
@@ -443,7 +439,7 @@ ${themeCssDark}
           ({ id, label }) => `
         <div class="page${id === "colors" ? " active" : ""}" id="page-${id}">
           <h1 class="page-title">${esc(label)}</h1>
-          <p class="page-desc">${pageDesc(id, name)}</p>
+          <p class="page-desc">${esc(pageDesc(id, name))}</p>
           ${sections[id] ?? ""}
         </div>
       `,
@@ -493,16 +489,18 @@ ${themeCssDark}
 // ─── Page descriptions ────────────────────────────────────────────────────────
 
 function pageDesc(id: string, name: string): string {
-  const descs: Record<string, string> = {
+  // Foundation pages have static descriptions
+  const foundations: Record<string, string> = {
     colors: `The color tokens used across ${name}. Global palette tokens are the raw values; semantic tokens map intent to palette.`,
     typography: `Type scale and font settings for ${name}. All sizes, weights, and line heights.`,
     spacing: `Spacing scale based on the configured base unit. Used for padding, margin, and gap values.`,
     radius: `Border radius tokens. Applied to buttons, inputs, cards, and other surfaces.`,
     elevation: `Box shadow levels. Higher levels appear more elevated.`,
     motion: `Duration and easing tokens. Click any row to preview the animation.`,
-    button: `Triggers an action or event. Supports multiple variants, sizes, and loading state.`,
-    input: `Single-line text field with label, helper text, and validation states.`,
-    card: `Surface that groups related content. Supports header, body, and footer slots.`,
   };
-  return descs[id] ?? "";
+  if (id in foundations) return foundations[id] ?? "";
+
+  // Component descriptions come from the registry
+  const entry = SHOWCASE_COMPONENTS.find((c) => c.id === id);
+  return entry?.pageDescription ?? "";
 }

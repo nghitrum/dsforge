@@ -26,7 +26,7 @@ export interface SelectOption {
 }
 
 export interface SelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> {
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size" | "style"> {
   /** Visible label */
   label?: string;
   /** Helper text shown below */
@@ -42,6 +42,8 @@ export interface SelectProps
   /** Full-width */
   fullWidth?: boolean;
   "aria-label"?: string;
+  /** Style applied to the outer wrapper element */
+  style?: React.CSSProperties;
 }
 
 // ─── Size styles ──────────────────────────────────────────────────────────────
@@ -125,6 +127,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       fontFamily: "var(--font-family-base, inherit)",
       width: fullWidth ? "100%" : undefined,
       opacity: disabled ? "var(--state-disabled-opacity, 0.4)" : 1,
+      ...style,
     };
 
     const selectWrapperStyle: React.CSSProperties = {
@@ -153,7 +156,6 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       lineHeight: "var(--line-height-body, 1.5)",
       cursor: disabled ? "not-allowed" : "pointer",
       width: "100%",
-      ...style,
     };
 
     return (

@@ -40,6 +40,8 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Renders as a dot with no text */
   dot?: boolean;
   children?: React.ReactNode;
+  /** Style overrides applied to the badge element */
+  style?: React.CSSProperties;
 }
 
 // ─── Size styles ──────────────────────────────────────────────────────────────

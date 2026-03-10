@@ -44,6 +44,8 @@ export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Called when dismissed */
   onDismiss?: () => void;
   children?: React.ReactNode;
+  /** Style overrides applied to the alert container */
+  style?: React.CSSProperties;
 }
 
 export interface ToastItem {

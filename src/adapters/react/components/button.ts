@@ -57,6 +57,8 @@ export interface ButtonProps
    */
   "aria-label": string;
   children?: React.ReactNode;
+  /** Style overrides applied to the button element */
+  style?: React.CSSProperties;
 }
 
 // ─── Size styles ──────────────────────────────────────────────────────────────

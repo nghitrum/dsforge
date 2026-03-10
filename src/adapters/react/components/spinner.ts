@@ -29,6 +29,8 @@ export interface SpinnerProps extends React.SVGProps<SVGSVGElement> {
   variant?: SpinnerVariant;
   /** Accessible label for screen readers */
   label?: string;
+  /** Style overrides applied to the SVG element */
+  style?: React.CSSProperties;
 }
 
 // ─── Size map ─────────────────────────────────────────────────────────────────

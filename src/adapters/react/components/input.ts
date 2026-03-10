@@ -25,7 +25,7 @@ import React from "react";
 export type InputVariant = ${variantType};
 
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "style"> {
   /** Visual/state variant */
   variant?: InputVariant;
   /** Label displayed above the input */
@@ -42,6 +42,8 @@ export interface InputProps
   endAdornment?: React.ReactNode;
   /** Accessible label — required for inputs without a visible label */
   "aria-label"?: string;
+  /** Style applied to the outer wrapper element */
+  style?: React.CSSProperties;
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -96,6 +98,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       gap: "var(--spacing-1, 4px)",
       fontFamily: "var(--font-family-base, inherit)",
       opacity: isDisabled ? "var(--state-disabled-opacity, 0.4)" : 1,
+      ...style,
     };
 
     const inputWrapperStyle: React.CSSProperties = {
@@ -119,7 +122,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       border: "none",
       outline: "none",
       cursor: isDisabled ? "not-allowed" : "text",
-      ...style,
     };
 
     const [isFocused, setIsFocused] = React.useState(false);

@@ -23,11 +23,13 @@ import React from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface RadioProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size" | "style"> {
   /** Visible label */
   label?: string;
   /** Size preset */
-  size?: "sm" | "md" | "lg";${requiresAriaLabel ? '\n  /** @required Governance rule: radio inputs must have aria-label. */\n  "aria-label": string;' : '\n  "aria-label"?: string;'}
+  size?: "sm" | "md" | "lg";
+  /** Style applied to the outer label wrapper */
+  style?: React.CSSProperties;${requiresAriaLabel ? '\n  /** @required Governance rule: radio inputs must have aria-label. */\n  "aria-label": string;' : '\n  "aria-label"?: string;'}
 }
 
 export interface RadioGroupProps {
@@ -156,8 +158,8 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
     const boxSize = SIZE_BOX[size];
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.checked && value !== undefined) {
-        ctx?.onChange(value as string);
+      if (e.target.checked) {
+        ctx?.onChange(e.target.value);
       }
       onChange?.(e);
     };
@@ -181,6 +183,7 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
           cursor: isDisabled ? "not-allowed" : "pointer",
           opacity: isDisabled ? "var(--state-disabled-opacity, 0.4)" : 1,
           fontFamily: "var(--font-family-base, inherit)",
+          ...style,
         }}
       >
         {/* Hidden native input */}
@@ -203,7 +206,6 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
             height: boxSize,
             margin: 0,
             cursor: isDisabled ? "not-allowed" : "pointer",
-            ...style,
           }}
           {...props}
         />

@@ -22,7 +22,7 @@ import React from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface CheckboxProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size" | "style"> {
   /** Visible label */
   label?: string;
   /** Helper text shown below the label */
@@ -30,7 +30,9 @@ export interface CheckboxProps
   /** Indeterminate state (partially checked) */
   indeterminate?: boolean;
   /** Size preset */
-  size?: "sm" | "md" | "lg";${requiresAriaLabel ? '\n  /** @required Governance rule: checkboxes must have aria-label. */\n  "aria-label": string;' : '\n  "aria-label"?: string;'}
+  size?: "sm" | "md" | "lg";
+  /** Style applied to the outer wrapper element */
+  style?: React.CSSProperties;${requiresAriaLabel ? '\n  /** @required Governance rule: checkboxes must have aria-label. */\n  "aria-label": string;' : '\n  "aria-label"?: string;'}
 }
 
 // ─── Size map ─────────────────────────────────────────────────────────────────
@@ -86,7 +88,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const id = propId ?? React.useId();
     const helperId = \`\${id}-helper\`;
     const internalRef = React.useRef<HTMLInputElement>(null);
-    const resolvedRef = (ref as React.RefObject<HTMLInputElement>) ?? internalRef;
+    React.useImperativeHandle(ref, () => internalRef.current!);
 
     const [isChecked, setIsChecked] = React.useState(defaultChecked ?? false);
     const [isFocusVisible, setIsFocusVisible] = React.useState(false);
@@ -96,8 +98,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const boxSize = SIZE_BOX[size];
 
     React.useEffect(() => {
-      if (resolvedRef.current) {
-        resolvedRef.current.indeterminate = indeterminate;
+      if (internalRef.current) {
+        internalRef.current.indeterminate = indeterminate;
       }
     }, [indeterminate]);
 
@@ -143,6 +145,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           opacity: disabled ? "var(--state-disabled-opacity, 0.4)" : 1,
           cursor: disabled ? "not-allowed" : "default",
           fontFamily: "var(--font-family-base, inherit)",
+          ...style,
         }}
       >
         <label
@@ -156,7 +159,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         >
           {/* Hidden native input */}
           <input
-            ref={resolvedRef}
+            ref={internalRef}
             type="checkbox"
             id={id}
             checked={resolvedChecked}
@@ -173,7 +176,6 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               height: boxSize,
               margin: 0,
               cursor: disabled ? "not-allowed" : "pointer",
-              ...style,
             }}
             {...props}
           />

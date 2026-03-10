@@ -49,6 +49,11 @@ export function generatePackageJson(
       build: "tsc",
       prepublishOnly: "npm run build",
     },
+    devDependencies: {
+      "@types/react": "^18.0.0",
+      "@types/react-dom": "^18.0.0",
+      typescript: "^5.0.0",
+    },
     peerDependencies: {
       react: ">=17.0.0",
       "react-dom": ">=17.0.0",

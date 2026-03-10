@@ -34,10 +34,14 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Remove all padding from the card body */
   noPadding?: boolean;
   children: React.ReactNode;
+  /** Style overrides applied to the card container */
+  style?: React.CSSProperties;
 }
 
 export interface CardSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  /** Style overrides applied to the section element */
+  style?: React.CSSProperties;
 }
 
 // ─── Variant styles ───────────────────────────────────────────────────────────

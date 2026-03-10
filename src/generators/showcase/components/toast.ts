@@ -10,11 +10,11 @@ export function toastDef(
   const r = `${radiusMd}px`;
 
   type VariantSpec = { name: string; bg: string; border: string; icon: string; label: string };
-  const vDefault: VariantSpec = { name: "default", bg: "#f8fafc", border: "#e2e8f0", icon: "#6b7280", label: "Default" };
-  const vSuccess: VariantSpec = { name: "success", bg: "#dcfce7", border: "#86efac", icon: "#16a34a", label: "Success" };
-  const vWarning: VariantSpec = { name: "warning", bg: "#fef9c3", border: "#fde047", icon: "#ca8a04", label: "Warning" };
-  const vDanger: VariantSpec  = { name: "danger",  bg: "#fee2e2", border: "#fca5a5", icon: "#dc2626", label: "Error" };
-  const vInfo: VariantSpec    = { name: "info",    bg: "#dbeafe", border: "#93c5fd", icon: "#2563eb", label: "Info" };
+  const vDefault: VariantSpec = { name: "default", bg: "var(--color-bg-subtle, #f8fafc)", border: "var(--color-border-default, #e2e8f0)", icon: "var(--color-text-secondary, #6b7280)", label: "Default" };
+  const vSuccess: VariantSpec = { name: "success", bg: "var(--color-success-subtle, #dcfce7)", border: "var(--color-success-border, #86efac)", icon: "var(--color-success, #16a34a)", label: "Success" };
+  const vWarning: VariantSpec = { name: "warning", bg: "var(--color-warning-subtle, #fef9c3)", border: "var(--color-warning-border, #fde047)", icon: "var(--color-warning, #ca8a04)", label: "Warning" };
+  const vDanger: VariantSpec  = { name: "danger",  bg: "var(--color-danger-subtle, #fee2e2)",  border: "var(--color-danger-border, #fca5a5)",  icon: "var(--color-danger, #dc2626)",  label: "Error" };
+  const vInfo: VariantSpec    = { name: "info",    bg: "var(--color-info-subtle, #dbeafe)",    border: "var(--color-info-border, #93c5fd)",    icon: "var(--color-info, #2563eb)",    label: "Info" };
   const variants = [vDefault, vSuccess, vWarning, vDanger, vInfo];
 
   const icons: Record<string, string> = {
@@ -30,7 +30,7 @@ export function toastDef(
       <span style="color:${v.icon};flex-shrink:0;margin-top:1px">${icons[v.name]}</span>
       <div>
         <p style="margin:0;font-size:13px;font-weight:600;color:${v.icon}">${title}</p>
-        <p style="margin:4px 0 0;font-size:13px;color:#6b7280">${body}</p>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">${body}</p>
       </div>
     </div>`;
 
@@ -118,9 +118,9 @@ export function toastDef(
           <span style="color:${vWarning.icon};flex-shrink:0;margin-top:1px">${icons["warning"]}</span>
           <div style="flex:1">
             <p style="margin:0;font-size:13px;font-weight:600;color:${vWarning.icon}">Your trial expires in 3 days</p>
-            <p style="margin:4px 0 0;font-size:13px;color:#6b7280">Upgrade to continue using all features.</p>
+            <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">Upgrade to continue using all features.</p>
           </div>
-          <button style="background:transparent;border:none;cursor:pointer;color:#6b7280;padding:2px;flex-shrink:0" aria-label="Dismiss">✕</button>
+          <button style="background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary,#6b7280);padding:2px;flex-shrink:0" aria-label="Dismiss">✕</button>
         </div>`,
       },
       {
@@ -141,15 +141,15 @@ toast.add({
   message: "Your changes have been saved.",
   duration: 4000,
 });`,
-        previewHtml: `<div style="position:relative;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:${r};padding:20px;min-height:80px;font-family:${esc(ff)}">
-          <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Bottom-right overlay (fixed position)</p>
-          <div style="display:flex;gap:12px;padding:12px 16px;border-radius:${r};border:1px solid #86efac;background:#dcfce7;box-shadow:0 4px 12px rgba(0,0,0,0.12)">
-            <span style="color:#16a34a">${icons["success"]}</span>
+        previewHtml: `<div style="position:relative;background:var(--color-bg-subtle,#f8fafc);border:1px dashed var(--color-border-default,#e2e8f0);border-radius:${r};padding:20px;min-height:80px;font-family:${esc(ff)}">
+          <p style="font-size:12px;color:var(--color-text-secondary,#6b7280);margin:0 0 12px">Bottom-right overlay (fixed position)</p>
+          <div style="display:flex;gap:12px;padding:12px 16px;border-radius:${r};border:1px solid var(--color-success-border,#86efac);background:var(--color-success-subtle,#dcfce7);box-shadow:0 4px 12px rgba(0,0,0,0.12)">
+            <span style="color:var(--color-success,#16a34a)">${icons["success"]}</span>
             <div>
-              <p style="margin:0;font-size:13px;font-weight:600;color:#0f172a">Saved</p>
-              <p style="margin:4px 0 0;font-size:13px;color:#6b7280">Your changes have been saved.</p>
+              <p style="margin:0;font-size:13px;font-weight:600;color:var(--color-text-primary,#0f172a)">Saved</p>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">Your changes have been saved.</p>
             </div>
-            <button style="background:transparent;border:none;cursor:pointer;color:#6b7280;padding:2px" aria-label="Dismiss">✕</button>
+            <button style="background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary,#6b7280);padding:2px" aria-label="Dismiss">✕</button>
           </div>
         </div>`,
       },

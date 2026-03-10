@@ -143,7 +143,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       flex: 1,
       appearance: "none",
       WebkitAppearance: "none",
-      background: "transparent",
+      background: "var(--select-bg, var(--color-bg-default, #ffffff))",
       border: "none",
       outline: "none",
       padding: SIZE_PADDING[size],

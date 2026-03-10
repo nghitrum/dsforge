@@ -29,7 +29,7 @@ export function selectDef(
     <div class="ds-field" style="font-family:${esc(ff)};max-width:320px;${disabled ? "opacity:0.5" : ""}">
       <label class="ds-label" style="color:${C.text}">${esc(label)}</label>
       <div style="position:relative;display:flex;align-items:center;background:${C.bg};border:1px solid ${borderColor};border-radius:${r}">
-        <select style="flex:1;appearance:none;-webkit-appearance:none;background:transparent;border:none;outline:none;padding:8px 32px 8px 12px;font-size:14px;color:${C.text};cursor:${disabled ? "not-allowed" : "pointer"};width:100%" ${disabled ? "disabled" : ""}>
+        <select style="flex:1;appearance:none;-webkit-appearance:none;background:${C.bg};border:none;outline:none;padding:8px 32px 8px 12px;font-size:14px;color:${C.text};cursor:${disabled ? "not-allowed" : "pointer"};width:100%" ${disabled ? "disabled" : ""}>
           <option value="" disabled selected style="color:${C.textSecondary}">${esc(placeholder)}</option>
           ${options.map((o) => `<option>${esc(o)}</option>`).join("")}
         </select>
@@ -129,7 +129,7 @@ export function selectDef(
         previewHtml: `<div class="ds-field" style="font-family:${esc(ff)};max-width:320px">
           <label class="ds-label" style="color:${C.text}">Framework</label>
           <div style="position:relative;display:flex;align-items:center;background:${C.bg};border:1px solid ${C.border};border-radius:${r}">
-            <select style="flex:1;appearance:none;-webkit-appearance:none;background:transparent;border:none;outline:none;padding:8px 32px 8px 12px;font-size:14px;color:${C.text};cursor:pointer;width:100%">
+            <select style="flex:1;appearance:none;-webkit-appearance:none;background:${C.bg};border:none;outline:none;padding:8px 32px 8px 12px;font-size:14px;color:${C.text};cursor:pointer;width:100%">
               <option value="" disabled selected style="color:${C.textSecondary}">Choose a framework…</option>
               <option>React</option>
               <option>Vue</option>

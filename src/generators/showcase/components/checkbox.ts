@@ -24,7 +24,7 @@ export function checkboxDef(
       : indeterminate
         ? `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg>`
         : "";
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:2px;border:2px solid ${borderColor};background:${fill};flex-shrink:0">${mark}</span>`;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:var(--control-size-md,16px);height:var(--control-size-md,16px);border-radius:var(--radius-sm,2px);border:2px solid ${borderColor};background:${fill};flex-shrink:0">${mark}</span>`;
   };
 
   const checkboxHtml = (
@@ -33,9 +33,9 @@ export function checkboxDef(
     opts = "",
     helper = "",
   ) =>
-    `<label style="display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:${esc(ff)};${opts}">
+    `<label style="display:inline-flex;align-items:flex-start;gap:var(--spacing-2,8px);cursor:pointer;font-family:${esc(ff)};${opts}">
       ${boxHtml(checked)}
-      <span style="font-size:14px;color:${C.text};line-height:1.4">${label}${helper ? `<br><span style="font-size:12px;color:${C.textSecondary}">${helper}</span>` : ""}</span>
+      <span style="font-size:var(--font-size-small,0.875rem);color:${C.text};line-height:1.4">${label}${helper ? `<br><span style="font-size:var(--font-size-caption,0.75rem);color:${C.textSecondary}">${helper}</span>` : ""}</span>
     </label>`;
 
   return {
@@ -54,9 +54,9 @@ export function checkboxDef(
         <div class="comp-preview-col">
           ${checkboxHtml("Unchecked", false)}
           ${checkboxHtml("Checked", true)}
-          <label style="display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;font-family:${esc(ff)}">
+          <label style="display:inline-flex;align-items:flex-start;gap:var(--spacing-2,8px);cursor:pointer;font-family:${esc(ff)}">
             ${boxHtml(false, true)}
-            <span style="font-size:14px;color:${C.text}">Indeterminate</span>
+            <span style="font-size:var(--font-size-small,0.875rem);color:${C.text}">Indeterminate</span>
           </label>
           ${checkboxHtml("Disabled", false, "opacity:0.4;cursor:not-allowed")}
         </div>
@@ -141,9 +141,9 @@ export function checkboxDef(
   label="Select all (3 of 5)"
   indeterminate
 />`,
-        previewHtml: `<label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:${esc(ff)}">
+        previewHtml: `<label style="display:inline-flex;align-items:center;gap:var(--spacing-2,8px);cursor:pointer;font-family:${esc(ff)}">
           ${boxHtml(false, true)}
-          <span style="font-size:14px;color:${C.text}">Select all (3 of 5)</span>
+          <span style="font-size:var(--font-size-small,0.875rem);color:${C.text}">Select all (3 of 5)</span>
         </label>`,
       },
       {

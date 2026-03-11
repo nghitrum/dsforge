@@ -64,6 +64,15 @@ export const RADIUS_PRESETS: Record<Preset, Record<string, number>> = {
   spacious: { none: 0, sm: 3, md: 6, lg: 12, xl: 20, full: 9999 },
 };
 
+// ─── Control sizes ────────────────────────────────────────────────────────────
+// Form control dimensions (checkbox, radio) that scale with density.
+
+export const CONTROL_SIZE_PRESETS: Record<Preset, { sm: number; md: number; lg: number }> = {
+  compact:     { sm: 12, md: 14, lg: 18 },
+  comfortable: { sm: 14, md: 16, lg: 20 },
+  spacious:    { sm: 16, md: 18, lg: 24 },
+};
+
 // ─── Base units ───────────────────────────────────────────────────────────────
 
 export const PRESET_BASE_UNITS: Record<Preset, number> = {

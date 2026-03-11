@@ -9,7 +9,7 @@ export function badgeDef(
   const { ff } = componentTokens(config, tokens);
 
   const badgeHtml = (label: string, bg: string, color: string) =>
-    `<span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:12px;font-weight:500;padding:2px 8px;border-radius:9999px;background:${bg};color:${color};white-space:nowrap">${label}</span>`;
+    `<span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:var(--font-size-caption,0.75rem);font-weight:500;padding:2px var(--spacing-2,8px);border-radius:var(--radius-full,9999px);background:${bg};color:${color};white-space:nowrap">${label}</span>`;
 
   const variants = [
     { label: "Default", bg: "#f1f5f9", color: "#6b7280" },
@@ -36,10 +36,10 @@ export function badgeDef(
       <div class="comp-overview-section">
         <div class="comp-overview-label">Sizes</div>
         <div class="comp-preview-row" style="align-items:center">
-          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:11px;font-weight:500;padding:1px 6px;border-radius:9999px;background:#dbeafe;color:#2563eb">Small</span>
-          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:12px;font-weight:500;padding:2px 8px;border-radius:9999px;background:#dbeafe;color:#2563eb">Medium</span>
-          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:14px;font-weight:500;padding:4px 12px;border-radius:9999px;background:#dbeafe;color:#2563eb">Large</span>
-          <span style="display:inline-flex;width:8px;height:8px;border-radius:50%;background:#16a34a" title="Dot mode"></span>
+          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:var(--font-size-caption,0.75rem);font-weight:500;padding:1px var(--spacing-1,4px);border-radius:var(--radius-full,9999px);background:#dbeafe;color:#2563eb">Small</span>
+          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:var(--font-size-caption,0.75rem);font-weight:500;padding:2px var(--spacing-2,8px);border-radius:var(--radius-full,9999px);background:#dbeafe;color:#2563eb">Medium</span>
+          <span style="display:inline-flex;align-items:center;font-family:${esc(ff)};font-size:var(--font-size-body,1rem);font-weight:500;padding:var(--spacing-1,4px) var(--spacing-3,12px);border-radius:var(--radius-full,9999px);background:#dbeafe;color:#2563eb">Large</span>
+          <span style="display:inline-flex;width:var(--spacing-2,8px);height:var(--spacing-2,8px);border-radius:50%;background:#16a34a" title="Dot mode"></span>
         </div>
       </div>`,
     props: [

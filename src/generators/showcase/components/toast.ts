@@ -26,11 +26,11 @@ export function toastDef(
   };
 
   const alertHtml = (v: typeof variants[0], title: string, body: string) =>
-    `<div role="alert" style="display:flex;gap:12px;padding:12px 16px;border-radius:${r};border:1px solid ${v.border};background:${v.bg};font-family:${esc(ff)};max-width:360px">
+    `<div role="alert" style="display:flex;gap:var(--spacing-3,12px);padding:var(--component-padding-sm,12px) var(--component-padding-md,16px);border-radius:${r};border:1px solid ${v.border};background:${v.bg};font-family:${esc(ff)};max-width:360px">
       <span style="color:${v.icon};flex-shrink:0;margin-top:1px">${icons[v.name]}</span>
       <div>
-        <p style="margin:0;font-size:13px;font-weight:600;color:${v.icon}">${title}</p>
-        <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">${body}</p>
+        <p style="margin:0;font-size:var(--font-size-small,0.875rem);font-weight:600;color:${v.icon}">${title}</p>
+        <p style="margin:var(--spacing-1,4px) 0 0;font-size:var(--font-size-small,0.875rem);color:var(--color-text-secondary,#6b7280)">${body}</p>
       </div>
     </div>`;
 
@@ -120,11 +120,11 @@ export function toastDef(
 >
   Upgrade to continue using all features.
 </Alert>`,
-        previewHtml: `<div role="alert" style="display:flex;gap:12px;padding:12px 16px;border-radius:${r};border:1px solid ${vWarning.border};background:${vWarning.bg};font-family:${esc(ff)};max-width:360px">
+        previewHtml: `<div role="alert" style="display:flex;gap:var(--spacing-3,12px);padding:var(--component-padding-sm,12px) var(--component-padding-md,16px);border-radius:${r};border:1px solid ${vWarning.border};background:${vWarning.bg};font-family:${esc(ff)};max-width:360px">
           <span style="color:${vWarning.icon};flex-shrink:0;margin-top:1px">${icons["warning"]}</span>
           <div style="flex:1">
-            <p style="margin:0;font-size:13px;font-weight:600;color:${vWarning.icon}">Your trial expires in 3 days</p>
-            <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">Upgrade to continue using all features.</p>
+            <p style="margin:0;font-size:var(--font-size-small,0.875rem);font-weight:600;color:${vWarning.icon}">Your trial expires in 3 days</p>
+            <p style="margin:var(--spacing-1,4px) 0 0;font-size:var(--font-size-small,0.875rem);color:var(--color-text-secondary,#6b7280)">Upgrade to continue using all features.</p>
           </div>
           <button style="background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary,#6b7280);padding:2px;flex-shrink:0" aria-label="Dismiss">✕</button>
         </div>`,
@@ -149,11 +149,11 @@ toast.add({
 });`,
         previewHtml: `<div style="position:relative;background:var(--color-bg-subtle,#f8fafc);border:1px dashed var(--color-border-default,#e2e8f0);border-radius:${r};padding:20px;min-height:80px;font-family:${esc(ff)}">
           <p style="font-size:12px;color:var(--color-text-secondary,#6b7280);margin:0 0 12px">Bottom-right overlay (fixed position)</p>
-          <div style="display:flex;gap:12px;padding:12px 16px;border-radius:${r};border:1px solid var(--color-success-border,#86efac);background:var(--color-success-subtle,#dcfce7);box-shadow:0 4px 12px rgba(0,0,0,0.12)">
+          <div style="display:flex;gap:var(--spacing-3,12px);padding:var(--component-padding-sm,12px) var(--component-padding-md,16px);border-radius:${r};border:1px solid var(--color-success-border,#86efac);background:var(--color-success-subtle,#dcfce7);box-shadow:0 4px 12px rgba(0,0,0,0.12)">
             <span style="color:var(--color-success,#16a34a)">${icons["success"]}</span>
             <div>
-              <p style="margin:0;font-size:13px;font-weight:600;color:var(--color-text-primary,#0f172a)">Saved</p>
-              <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-secondary,#6b7280)">Your changes have been saved.</p>
+              <p style="margin:0;font-size:var(--font-size-small,0.875rem);font-weight:600;color:var(--color-text-primary,#0f172a)">Saved</p>
+              <p style="margin:var(--spacing-1,4px) 0 0;font-size:var(--font-size-small,0.875rem);color:var(--color-text-secondary,#6b7280)">Your changes have been saved.</p>
             </div>
             <button style="background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary,#6b7280);padding:2px" aria-label="Dismiss">✕</button>
           </div>

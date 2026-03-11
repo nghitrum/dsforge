@@ -18,15 +18,15 @@ export function radioDef(
 
   const circleHtml = (selected: boolean) => {
     const borderColor = selected ? C.action : C.border;
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:2px solid ${borderColor};background:${C.bg};flex-shrink:0">
-      ${selected ? `<span style="width:8px;height:8px;border-radius:50%;background:${C.action}"></span>` : ""}
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:var(--control-size-md,16px);height:var(--control-size-md,16px);border-radius:50%;border:2px solid ${borderColor};background:${C.bg};flex-shrink:0">
+      ${selected ? `<span style="width:calc(var(--control-size-md,16px) / 2);height:calc(var(--control-size-md,16px) / 2);border-radius:50%;background:${C.action}"></span>` : ""}
     </span>`;
   };
 
   const radioHtml = (label: string, selected: boolean, opts = "") =>
-    `<label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:${esc(ff)};${opts}">
+    `<label style="display:inline-flex;align-items:center;gap:var(--spacing-2,8px);cursor:pointer;font-family:${esc(ff)};${opts}">
       ${circleHtml(selected)}
-      <span style="font-size:14px;color:${C.text}">${label}</span>
+      <span style="font-size:var(--font-size-small,0.875rem);color:${C.text}">${label}</span>
     </label>`;
 
   return {
@@ -41,7 +41,7 @@ export function radioDef(
         <div class="comp-overview-label">RadioGroup (vertical)</div>
         <div class="comp-preview-col">
           <fieldset style="border:none;padding:0;margin:0;font-family:${esc(ff)}">
-            <legend style="font-size:13px;font-weight:600;color:${C.text};margin-bottom:8px">Notification preference</legend>
+            <legend style="font-size:var(--font-size-small,0.875rem);font-weight:600;color:${C.text};margin-bottom:var(--spacing-2,8px)">Notification preference</legend>
             <div class="comp-preview-col">
               ${radioHtml("Email", true)}
               ${radioHtml("SMS", false)}
@@ -127,8 +127,8 @@ export function radioDef(
   <Radio value="annual" label="Annual (save 20%)" />
 </RadioGroup>`,
         previewHtml: `<fieldset style="border:none;padding:0;margin:0;font-family:${esc(ff)}">
-          <legend style="font-size:13px;font-weight:600;color:${C.text};margin-bottom:8px">Billing cycle</legend>
-          <div style="display:flex;flex-direction:column;gap:8px">
+          <legend style="font-size:var(--font-size-small,0.875rem);font-weight:600;color:${C.text};margin-bottom:var(--spacing-2,8px)">Billing cycle</legend>
+          <div style="display:flex;flex-direction:column;gap:var(--spacing-2,8px)">
             ${radioHtml("Monthly", true)}
             ${radioHtml("Annual (save 20%)", false)}
           </div>
@@ -143,8 +143,8 @@ export function radioDef(
   <Radio value="lg" label="L" />
 </RadioGroup>`,
         previewHtml: `<fieldset style="border:none;padding:0;margin:0;font-family:${esc(ff)}">
-          <legend style="font-size:13px;font-weight:600;color:${C.text};margin-bottom:8px">Size</legend>
-          <div style="display:flex;gap:16px">
+          <legend style="font-size:var(--font-size-small,0.875rem);font-weight:600;color:${C.text};margin-bottom:var(--spacing-2,8px)">Size</legend>
+          <div style="display:flex;gap:var(--spacing-4,16px)">
             ${radioHtml("S", false)}
             ${radioHtml("M", true)}
             ${radioHtml("L", false)}

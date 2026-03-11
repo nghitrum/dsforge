@@ -14,6 +14,7 @@ import {
   PRESETS,
   SPACING_PRESETS,
   RADIUS_PRESETS,
+  CONTROL_SIZE_PRESETS,
   buildSemanticSpacing,
 } from "../../presets/index";
 
@@ -112,6 +113,21 @@ export function emitBaseCss(
   if (typoEntries.length > 0) {
     sections.push(emitBlock(":root", typoEntries, "Typography"));
   }
+
+  // ── Control sizes ──
+  const currentPreset = (config.philosophy?.density ?? "comfortable") as import("../../presets/index").Preset;
+  const controlSizes = CONTROL_SIZE_PRESETS[currentPreset] ?? CONTROL_SIZE_PRESETS.comfortable;
+  sections.push(
+    emitBlock(
+      ":root",
+      [
+        ["control-size-sm", `${controlSizes.sm}px`],
+        ["control-size-md", `${controlSizes.md}px`],
+        ["control-size-lg", `${controlSizes.lg}px`],
+      ],
+      "Control sizes",
+    ),
+  );
 
   // ── Radius ──
   const radiusEntries: Array<[string, string]> = Object.entries(
@@ -238,6 +254,12 @@ export function emitDensityCss(config: DesignSystemConfig): string {
     for (const [key, value] of Object.entries(radius)) {
       entries.push([`radius-${key}`, value === 9999 ? "9999px" : `${value}px`]);
     }
+
+    // Control sizes (checkbox, radio)
+    const controlSizes = CONTROL_SIZE_PRESETS[preset];
+    entries.push(["control-size-sm", `${controlSizes.sm}px`]);
+    entries.push(["control-size-md", `${controlSizes.md}px`]);
+    entries.push(["control-size-lg", `${controlSizes.lg}px`]);
 
     lines.push(emitBlock(`[data-density="${preset}"]`, entries, `Preset: ${preset}`));
     lines.push("");

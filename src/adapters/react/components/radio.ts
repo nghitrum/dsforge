@@ -51,9 +51,9 @@ export interface RadioGroupProps {
 // ─── Size map ─────────────────────────────────────────────────────────────────
 
 const SIZE_BOX: Record<"sm" | "md" | "lg", string> = {
-  sm: "14px",
-  md: "16px",
-  lg: "20px",
+  sm: "var(--control-size-sm, 14px)",
+  md: "var(--control-size-md, 16px)",
+  lg: "var(--control-size-lg, 20px)",
 };
 
 const SIZE_FONT: Record<"sm" | "md" | "lg", string> = {

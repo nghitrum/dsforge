@@ -38,9 +38,17 @@ export interface CheckboxProps
 // ─── Size map ─────────────────────────────────────────────────────────────────
 
 const SIZE_BOX: Record<"sm" | "md" | "lg", string> = {
-  sm: "14px",
-  md: "16px",
-  lg: "20px",
+  sm: "var(--control-size-sm, 14px)",
+  md: "var(--control-size-md, 16px)",
+  lg: "var(--control-size-lg, 20px)",
+};
+
+// SVG check/dash icon fits inside the box with a 6px inset, via calc() so it
+// tracks the CSS var when density changes at runtime.
+const SVG_SIZE: Record<"sm" | "md" | "lg", string> = {
+  sm: "calc(var(--control-size-sm, 14px) - 6px)",
+  md: "calc(var(--control-size-md, 16px) - 6px)",
+  lg: "calc(var(--control-size-lg, 20px) - 6px)",
 };
 
 const SIZE_FONT: Record<"sm" | "md" | "lg", string> = {
@@ -184,8 +192,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           <span style={boxStyle} aria-hidden="true">
             {isActive && (
               <svg
-                width={parseInt(boxSize) - 6}
-                height={parseInt(boxSize) - 6}
+                style={{ width: SVG_SIZE[size], height: SVG_SIZE[size] }}
                 viewBox="0 0 10 10"
                 fill="none"
                 stroke="#fff"

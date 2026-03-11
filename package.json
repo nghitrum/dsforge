@@ -1,6 +1,6 @@
 {
   "name": "@nghitrum/dsforge",
-  "version": "0.1.5-alpha.4",
+  "version": "0.1.5-alpha.5",
   "description": "AI-native design system generator — tokens → components → docs → npm",
   "keywords": [
     "design-system",

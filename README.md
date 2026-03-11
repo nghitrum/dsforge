@@ -24,7 +24,6 @@ design-system.config.json  →  dsforge generate
 dist-ds/
 ├── src/           9 typed React components
 ├── tokens/        CSS custom properties, JS map, Tailwind extension
-├── docs/          MDX documentation per component
 ├── metadata/      AI-readable JSON contracts per component
 └── showcase.html  visual docs — open directly in the browser, no server
 ```
@@ -96,10 +95,6 @@ Each component is typed, themed with your actual tokens, and ships with a prop t
 `light.css` / `dark.css` — theme overrides
 `tokens.js` — JS token map for runtime use
 `tailwind.js` — Tailwind theme extension, ready to drop into `tailwind.config.js`
-
-### MDX docs
-
-One `.mdx` file per component, generated from your config. Import them into any docs site.
 
 ### AI metadata contracts
 

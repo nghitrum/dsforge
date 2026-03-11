@@ -185,11 +185,11 @@ export function generateComponentIndex(
 
   // Re-export components
   for (const name of componentNames) {
-    lines.push(`export * from "./${name}";`);
+    lines.push(`export * from "./components/${name}/${name}";`);
   }
 
   // Re-export ThemeProvider
-  lines.push(`export * from "./ThemeProvider";`);
+  lines.push(`export * from "./components/ThemeProvider/ThemeProvider";`);
   lines.push("");
 
   return lines.join("\n");

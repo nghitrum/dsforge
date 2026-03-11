@@ -24,7 +24,6 @@ import { resolveTokens } from "../../core/token-resolver";
 import { logger } from "../../utils/logger";
 import { validateConfig } from "./validate";
 import { generateCssFiles, emitDensityCss } from "../../generators/tokens/css-vars";
-import { generateMetadata } from "../../generators/metadata/generator";
 import {
   generateTsConfig,
   generateChangelog,
@@ -203,23 +202,64 @@ export async function runGenerate(
   // ── 5. Components ──
   if (!only || only === "components") {
     logger.step("Generating React components...");
-    const srcDir = path.join(outRoot, "src");
-    await ensureDir(srcDir);
+    const componentsDir = path.join(outRoot, "components");
+    await ensureDir(componentsDir);
 
     const generatedNames: string[] = [];
+    const generatedComponentJsons: import("../../adapters/react/componentSchemas").ComponentJson[] = [];
+
+    // Build CSS vars for component JSON (light + dark theme resolved values)
+    const flatTokens: Record<string, string> = {};
+    for (const [k, v] of Object.entries(resolution.tokens)) {
+      flatTokens[`--${k.replace(/^(global|semantic|component)\./, "")}`] = v;
+    }
+    const lightOverrides = config.themes?.["light"] ?? {};
+    const darkOverrides = config.themes?.["dark"] ?? {};
+    const lightCssVars: Record<string, string> = {
+      ...flatTokens,
+      ...Object.fromEntries(Object.entries(lightOverrides).map(([k, v]) => [`--${k}`, String(v)])),
+    };
+    const darkCssVars: Record<string, string> = {
+      ...flatTokens,
+      ...Object.fromEntries(Object.entries(darkOverrides).map(([k, v]) => [`--${k}`, String(v)])),
+    };
+    const resolvedCssVars = { light: lightCssVars, dark: darkCssVars };
+
+    const { generateComponentJson } = await import("../../adapters/react/generateComponentJson");
+    const { generateComponentMetadata } = await import("../../adapters/react/generateComponentMetadata");
 
     for (const componentName of REACT_COMPONENTS) {
+      const pascalName = componentName.charAt(0).toUpperCase() + componentName.slice(1);
       try {
         const { filename, content } = reactAdapter.generateComponent(
           componentName,
           config,
           rules[componentName],
         );
-        await writeFile(path.join(srcDir, filename), content);
-        logger.dim(`  → src/${filename}`);
-        generatedNames.push(
-          componentName.charAt(0).toUpperCase() + componentName.slice(1),
+        const componentSubDir = path.join(componentsDir, pascalName);
+        await ensureDir(componentSubDir);
+        await writeFile(path.join(componentSubDir, filename), content);
+        logger.dim(`  → components/${pascalName}/${filename}`);
+        generatedNames.push(pascalName);
+
+        // Write Component.json (free tier)
+        const componentJson = generateComponentJson(pascalName, resolvedCssVars);
+        generatedComponentJsons.push(componentJson);
+        await writeFile(
+          path.join(componentSubDir, `${pascalName}.json`),
+          JSON.stringify(componentJson, null, 2),
         );
+        logger.dim(`  → components/${pascalName}/${pascalName}.json`);
+
+        // Write Component.metadata.json (Pro only)
+        if (isProUnlocked()) {
+          const metadata = generateComponentMetadata(pascalName);
+          await writeFile(
+            path.join(componentSubDir, `${pascalName}.metadata.json`),
+            JSON.stringify(metadata, null, 2),
+          );
+          logger.dim(`  → components/${pascalName}/${pascalName}.metadata.json`);
+        }
       } catch (err) {
         logger.warn(
           `[dsforge] Could not generate ${componentName} — ${(err as Error).message}`,
@@ -227,34 +267,45 @@ export async function runGenerate(
       }
     }
 
-    // ThemeProvider
+    // ThemeProvider — colocated in components/ThemeProvider/
     const { filename: tpFile, content: tpContent } =
       reactAdapter.generateThemeProvider(config);
-    await writeFile(path.join(srcDir, tpFile), tpContent);
-    logger.dim(`  → src/${tpFile}`);
+    const tpDir = path.join(componentsDir, "ThemeProvider");
+    await ensureDir(tpDir);
+    await writeFile(path.join(tpDir, tpFile), tpContent);
+    logger.dim(`  → components/ThemeProvider/${tpFile}`);
 
-    // Barrel index
-    const { filename: idxFile, content: idxContent } =
-      reactAdapter.generateComponentIndex(config, generatedNames);
-    await writeFile(path.join(srcDir, idxFile), idxContent);
-    logger.dim(`  → src/${idxFile}`);
-
-    logger.success(`${generatedNames.length} components generated`);
-  }
-
-  // ── 6. Metadata (Pro only) ──
-  if (isProUnlocked() && (!only || only === "metadata")) {
-    logger.step("Writing AI metadata...");
-    const metaDir = path.join(outRoot, "metadata");
-    await ensureDir(metaDir);
-
-    const metaFiles = generateMetadata(config, fullRules, tokenCount);
-    for (const { filename, content } of metaFiles) {
-      await writeFile(path.join(metaDir, filename), content);
-      logger.dim(`  → metadata/${filename}`);
+    // Write ThemeProvider.json (free tier)
+    try {
+      const tpJson = generateComponentJson("ThemeProvider", resolvedCssVars);
+      generatedComponentJsons.push(tpJson);
+      await writeFile(
+        path.join(tpDir, "ThemeProvider.json"),
+        JSON.stringify(tpJson, null, 2),
+      );
+      logger.dim(`  → components/ThemeProvider/ThemeProvider.json`);
+      if (isProUnlocked()) {
+        const tpMeta = generateComponentMetadata("ThemeProvider");
+        await writeFile(
+          path.join(tpDir, "ThemeProvider.metadata.json"),
+          JSON.stringify(tpMeta, null, 2),
+        );
+        logger.dim(`  → components/ThemeProvider/ThemeProvider.metadata.json`);
+      }
+    } catch {
+      // ThemeProvider definition may not exist — skip silently
     }
 
-    logger.success(`Metadata written (${metaFiles.length} files)`);
+    // Barrel index at the package root
+    const { filename: idxFile, content: idxContent } =
+      reactAdapter.generateComponentIndex(config, generatedNames);
+    await writeFile(path.join(outRoot, idxFile), idxContent);
+    logger.dim(`  → ${idxFile}`);
+
+    logger.success(`${generatedNames.length} components generated`);
+
+    // Store for use in Pro outputs below
+    (globalThis as Record<string, unknown>)["__dsforgGeneratedJsons"] = generatedComponentJsons;
   }
 
   // ── 8. Package files ──
@@ -295,6 +346,80 @@ export async function runGenerate(
     logger.success(`Package files written`);
   }
 
+  // ── 6. Pro outputs (registry.json, ai/) ──
+  if (isProUnlocked() && (!only || only === "components")) {
+    logger.step("Writing Pro outputs...");
+
+    const generatedJsons = (
+      (globalThis as Record<string, unknown>)["__dsforgGeneratedJsons"] ?? []
+    ) as import("../../adapters/react/componentSchemas").ComponentJson[];
+
+    const { generateRegistry } = await import("../../adapters/react/generateRegistry");
+    const {
+      generateSystemPrompt,
+      generateComponentsJson,
+      generateCursorContext,
+      generateCopilotInstructions,
+    } = await import("../../adapters/react/generateAiFolder");
+
+    const systemName = config.meta.name;
+    const version = config.meta.version;
+
+    // registry.json
+    const registry = generateRegistry(systemName, version, generatedJsons);
+    await writeFile(path.join(outRoot, "registry.json"), JSON.stringify(registry, null, 2));
+    logger.dim(`  → registry.json`);
+
+    // Collect metadata for AI outputs (Pro: definitions always available)
+    const { COMPONENT_METADATA_DEFINITIONS } = await import("../../adapters/react/componentDefinitions");
+    const metadataList = generatedJsons
+      .map((c) => COMPONENT_METADATA_DEFINITIONS[c.name])
+      .filter((m): m is import("../../adapters/react/componentSchemas").ComponentMetadataJson => Boolean(m));
+
+    // Build flat token map for system prompt
+    const flatTokensForAi: Record<string, { light: string; dark: string }> = {};
+    for (const [k, v] of Object.entries(resolution.tokens)) {
+      const cssVar = `--${k.replace(/^(global|semantic|component)\./, "")}`;
+      flatTokensForAi[cssVar] = {
+        light: (config.themes?.["light"] as Record<string, string> | undefined)?.[cssVar.slice(2)] ?? v,
+        dark: (config.themes?.["dark"] as Record<string, string> | undefined)?.[cssVar.slice(2)] ?? v,
+      };
+    }
+
+    const aiDir = path.join(outRoot, "ai");
+    await ensureDir(aiDir);
+    const cursorDir = path.join(aiDir, ".cursor");
+    await ensureDir(cursorDir);
+
+    const componentNames = generatedJsons.map((c) => c.name);
+
+    await writeFile(
+      path.join(aiDir, "system-prompt.md"),
+      generateSystemPrompt(systemName, flatTokensForAi, componentNames),
+    );
+    logger.dim(`  → ai/system-prompt.md`);
+
+    await writeFile(
+      path.join(aiDir, "components.json"),
+      generateComponentsJson(systemName, generatedJsons, metadataList),
+    );
+    logger.dim(`  → ai/components.json`);
+
+    await writeFile(
+      path.join(cursorDir, "context.md"),
+      generateCursorContext(systemName),
+    );
+    logger.dim(`  → ai/.cursor/context.md`);
+
+    await writeFile(
+      path.join(outRoot, "copilot-instructions.md"),
+      generateCopilotInstructions(systemName),
+    );
+    logger.dim(`  → copilot-instructions.md`);
+
+    logger.success(`Pro outputs written`);
+  }
+
   // ── 9. Showcase ──
   logger.step("Generating showcase...");
   const { generateShowcase } = await import("../../generators/showcase/html");
@@ -302,8 +427,8 @@ export async function runGenerate(
   await writeFile(path.join(outRoot, "showcase.html"), showcaseHtml);
   logger.dim(`  → showcase.html`);
 
-  const fsExtra = await import("fs-extra");
-  const fsE = fsExtra.default ?? fsExtra;
+  const fsExtraShowcase = await import("fs-extra");
+  const fsE = fsExtraShowcase.default ?? fsExtraShowcase;
   const faviconSrc = path.join(cwd, "assets", "favicon.svg");
   const faviconDest = path.join(outRoot, "assets", "favicon.svg");
   if (await fsE.pathExists(faviconSrc)) {

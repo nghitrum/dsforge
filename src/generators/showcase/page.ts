@@ -1,5 +1,13 @@
-import type { ComponentDef } from "./types";
+import type {
+  ComponentJson,
+  ComponentMetadataJson,
+  PropMeta,
+  AccessibilityContract,
+} from "../../adapters/react/componentSchemas";
+import type { A11yItem, ExampleDef } from "./types";
 import { esc } from "./types";
+
+// ─── Locked panel ─────────────────────────────────────────────────────────────
 
 const lockedPanel = (label: string) => `
   <div class="locked-panel">
@@ -9,17 +17,11 @@ const lockedPanel = (label: string) => `
     <p class="locked-hint">Set the <code>DSFORGE_KEY</code> environment variable to unlock.</p>
   </div>`;
 
-export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
-  const tabId = (tab: string) => `${def.id}-tab-${tab}`;
-  const panelId = (tab: string) => `${def.id}-panel-${tab}`;
+// ─── Props table ──────────────────────────────────────────────────────────────
 
-  // ── Overview ──────────────────────────────────────────────────────────────
-  const overviewHtml = `
-    <div class="comp-overview">${def.overviewHtml}</div>
-    <p class="component-description">${esc(def.description)}</p>`;
-
-  // ── Props table ───────────────────────────────────────────────────────────
-  const propsTable = `
+function buildPropsTable(props: PropMeta[]): string {
+  const sorted = [...props].sort((a, b) => (b.required ? 1 : 0) - (a.required ? 1 : 0));
+  return `
     <table class="props-table">
       <thead>
         <tr>
@@ -31,7 +33,7 @@ export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
         </tr>
       </thead>
       <tbody>
-        ${def.props
+        ${sorted
           .map(
             (p) => `
           <tr>
@@ -47,32 +49,111 @@ export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
           .join("")}
       </tbody>
     </table>`;
+}
 
-  // ── Examples ──────────────────────────────────────────────────────────────
-  const examplesHtml = def.examples
+// ─── Examples ─────────────────────────────────────────────────────────────────
+
+function buildExamplesHtml(id: string, examples: ExampleDef[]): string {
+  return examples
     .map(
       (ex, i) => `
     <div class="example-block">
       <div class="example-header">
         <div class="example-label">${esc(ex.label)}</div>
-        <div class="example-desc">${esc(ex.description)}</div>
+        ${ex.description ? `<div class="example-desc">${esc(ex.description)}</div>` : ""}
       </div>
-      <div class="example-preview">${ex.previewHtml}</div>
+      ${ex.previewHtml ? `<div class="example-preview">${ex.previewHtml}</div>` : ""}
       <div class="example-code-wrap">
         <div class="example-code-bar">
           <span>TSX</span>
-          <button class="copy-btn" onclick="copyCode('${def.id}-ex-${i}', this)">Copy</button>
+          <button class="copy-btn" onclick="copyCode('${id}-ex-${i}', this)">Copy</button>
         </div>
-        <pre class="example-code" id="${def.id}-ex-${i}">${esc(ex.code)}</pre>
+        <pre class="example-code" id="${id}-ex-${i}">${esc(ex.code)}</pre>
       </div>
     </div>`,
     )
     .join("");
+}
 
-  // ── Accessibility ─────────────────────────────────────────────────────────
-  const a11yHtml = `
+// ─── Accessibility ────────────────────────────────────────────────────────────
+
+function requirementBadge(val: string | boolean): string {
+  if (typeof val === "boolean") {
+    return val
+      ? '<span class="a11y-badge a11y-badge-aa">Yes</span>'
+      : '<span class="a11y-badge" style="background:var(--color-bg-overlay,#f1f5f9);color:var(--color-text-secondary,#64748b);border:1px solid var(--color-border-default,#e2e8f0)">No</span>';
+  }
+  return `<span class="a11y-badge a11y-badge-aa">${esc(val)}</span>`;
+}
+
+function buildA11yHtml(
+  contract: AccessibilityContract,
+  wcagItems: A11yItem[],
+): string {
+  // ── Section 1: Requirements ──────────────────────────────────────────────
+  const requirements = [
+    {
+      label: "Keyboard operable",
+      value: contract.keyboard,
+      desc: "Component can be fully operated with keyboard alone. No mouse required.",
+    },
+    {
+      label: "Focus ring",
+      value: contract.focusRing,
+      desc: "Visible focus indicator requirement when the element receives keyboard focus.",
+    },
+    {
+      label: "aria-label",
+      value: contract.ariaLabel,
+      desc: "When a programmatic accessible label must be provided by the consumer.",
+    },
+  ];
+
+  const requirementsHtml = `
+    <div class="a11y-requirements">
+      ${requirements
+        .map(
+          (r) => `
+      <div class="a11y-req-row">
+        <div class="a11y-req-meta">
+          <span class="a11y-req-label">${esc(r.label)}</span>
+          ${requirementBadge(r.value)}
+        </div>
+        <p class="a11y-req-desc">${esc(r.desc)}</p>
+      </div>`,
+        )
+        .join("")}
+      ${
+        contract.roles.length > 0
+          ? `<div class="a11y-req-row">
+        <div class="a11y-req-meta">
+          <span class="a11y-req-label">ARIA roles</span>
+          <span style="display:flex;gap:4px;flex-wrap:wrap">
+            ${contract.roles.map((r) => `<code class="a11y-role-chip">${esc(r)}</code>`).join("")}
+          </span>
+        </div>
+        <p class="a11y-req-desc">The semantic roles this component exposes to assistive technology.</p>
+      </div>`
+          : ""
+      }
+      ${contract.notes
+        .map(
+          (note) => `
+      <div class="a11y-note">
+        <span class="a11y-note-icon">↳</span>
+        <p class="a11y-note-text">${esc(note)}</p>
+      </div>`,
+        )
+        .join("")}
+    </div>`;
+
+  // ── Section 2: WCAG Criteria ─────────────────────────────────────────────
+  const wcagHtml =
+    wcagItems.length > 0
+      ? `
+    <div class="group-title" style="margin-top:32px">WCAG Criteria</div>
     <div class="a11y-list">
-      ${def.a11y
+      ${wcagItems
         .map(
           (item) => `
         <div class="a11y-item">
@@ -84,50 +165,105 @@ export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
         </div>`,
         )
         .join("")}
-    </div>`;
+    </div>`
+      : "";
 
-  // ── AI Metadata ───────────────────────────────────────────────────────────
-  const aiJson = JSON.stringify(def.aiMeta, null, 2);
-  const aiHtml = `
+  return `
+    <div class="group-title">Requirements</div>
+    ${requirementsHtml}
+    ${wcagHtml}`;
+}
+
+// ─── AI Metadata ──────────────────────────────────────────────────────────────
+
+function buildAiMetaHtml(id: string, meta: ComponentMetadataJson): string {
+  const metaJson = JSON.stringify(meta, null, 2);
+  return `
     <div class="ai-meta-intro">
-      <p>This JSON contract is emitted to <code>dist-ds/metadata/${def.id}.json</code>.
+      <p>This JSON contract is emitted to <code>components/${esc(meta.name)}/${esc(meta.name)}.metadata.json</code>.
       AI coding assistants use it to understand when and how to use this component correctly.</p>
     </div>
     <div class="example-code-wrap" style="margin-top:16px">
       <div class="example-code-bar">
         <span>JSON</span>
-        <button class="copy-btn" onclick="copyCode('${def.id}-ai-meta', this)">Copy</button>
+        <button class="copy-btn" onclick="copyCode('${id}-ai-meta', this)">Copy</button>
       </div>
-      <pre class="example-code" id="${def.id}-ai-meta">${esc(aiJson)}</pre>
+      <pre class="example-code" id="${id}-ai-meta">${esc(metaJson)}</pre>
     </div>
     <div class="ai-guidance">
       <div class="group-title" style="margin-top:24px">AI usage guidance</div>
       <ul class="ai-guidance-list">
-        ${def.aiMeta.aiGuidance.map((g) => `<li>${esc(g)}</li>`).join("")}
+        ${meta.aiGuidance.map((g) => `<li>${esc(g)}</li>`).join("")}
       </ul>
     </div>`;
+}
+
+// ─── Page builder ─────────────────────────────────────────────────────────────
+
+export interface ShowcasePageInput {
+  id: string;
+  label: string;
+  description: string;
+  overviewHtml: string;
+  json: ComponentJson;
+  /** Examples from the showcase component def — include previewHtml for live renders */
+  showcaseExamples: ExampleDef[];
+  /**
+   * Accessibility contract — always provided (free tier).
+   * Null only when no definition exists for this component.
+   */
+  a11yContract: AccessibilityContract | null;
+  /** WCAG criterion items from the showcase component definition */
+  a11yItems: A11yItem[];
+  /** Full Pro metadata — null on free tier. Used only for AI Metadata tab. */
+  metadata: ComponentMetadataJson | null;
+  isPro: boolean;
+}
+
+export function buildComponentPage(input: ShowcasePageInput): string {
+  const { id, description, overviewHtml, json, showcaseExamples, a11yContract, a11yItems, metadata, isPro } = input;
+
+  const tabId = (tab: string) => `${id}-tab-${tab}`;
+  const panelId = (tab: string) => `${id}-panel-${tab}`;
+
+  // ── Overview ──────────────────────────────────────────────────────────────
+  const overviewContent = `
+    <div class="comp-overview">${overviewHtml}</div>
+    <p class="component-description">${esc(description)}</p>`;
+
+  // ── Props ─────────────────────────────────────────────────────────────────
+  const propsContent = buildPropsTable(json.props);
+
+  // ── Examples ──────────────────────────────────────────────────────────────
+  const examplesContent = buildExamplesHtml(id, showcaseExamples);
+
+  // ── Accessibility — always free ───────────────────────────────────────────
+  const a11yContent = a11yContract
+    ? buildA11yHtml(a11yContract, a11yItems)
+    : `<div class="a11y-list">${a11yItems.map((item) => `
+      <div class="a11y-item">
+        <div class="a11y-header">
+          <span class="a11y-criterion">${esc(item.criterion)}</span>
+          <span class="a11y-badge a11y-badge-${item.level.toLowerCase()}">WCAG ${item.level}</span>
+        </div>
+        <p class="a11y-desc">${esc(item.description)}</p>
+      </div>`).join("")}</div>`;
+
+  // ── AI Metadata — Pro only ────────────────────────────────────────────────
+  const aiContent =
+    isPro && metadata ? buildAiMetaHtml(id, metadata) : lockedPanel("AI Metadata");
 
   // ── Assemble tabs ─────────────────────────────────────────────────────────
   const tabs = [
-    { id: "overview", label: "Overview", content: overviewHtml, locked: false },
-    { id: "props", label: "Props", content: propsTable, locked: false },
-    { id: "examples", label: "Examples", content: examplesHtml, locked: false },
-    {
-      id: "accessibility",
-      label: "Accessibility",
-      content: isPro ? a11yHtml : lockedPanel("Accessibility"),
-      locked: !isPro,
-    },
-    {
-      id: "ai-metadata",
-      label: "AI Metadata",
-      content: isPro ? aiHtml : lockedPanel("AI Metadata"),
-      locked: !isPro,
-    },
+    { id: "overview",       label: "Overview",      content: overviewContent, locked: false },
+    { id: "props",          label: "Props",         content: propsContent,    locked: false },
+    { id: "examples",       label: "Examples",      content: examplesContent, locked: false },
+    { id: "accessibility",  label: "Accessibility", content: a11yContent,     locked: false },
+    { id: "ai-metadata",    label: "AI Metadata",   content: aiContent,       locked: !isPro },
   ];
 
   return `
-    <div class="comp-tabs" id="${def.id}-tabs">
+    <div class="comp-tabs" id="${id}-tabs">
       <div class="comp-tab-bar" role="tablist">
         ${tabs
           .map(
@@ -138,7 +274,7 @@ export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
             role="tab"
             aria-selected="${i === 0}"
             aria-controls="${panelId(t.id)}"
-            onclick="${t.locked ? "return false" : `switchTab('${def.id}', '${t.id}', this)`}"
+            onclick="${t.locked ? "return false" : `switchTab('${id}', '${t.id}', this)`}"
             ${t.locked ? 'title="Unlock with dsforge Pro"' : ""}
           >${esc(t.label)}${t.locked ? " &#x1F512;" : ""}</button>`,
           )

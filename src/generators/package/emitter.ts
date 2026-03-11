@@ -39,12 +39,14 @@ export function generatePackageJson(
       ),
       "./tokens": "./tokens/tokens.js",
       "./tailwind": "./tokens/tailwind.js",
-      "./metadata": "./metadata/index.json",
       ...Object.fromEntries(
-        componentNames.map((c) => [`./metadata/${c}`, `./metadata/${c}.json`]),
+        componentNames.map((c) => {
+          const pascal = c.charAt(0).toUpperCase() + c.slice(1);
+          return [`./components/${pascal}`, `./components/${pascal}/${pascal}.json`];
+        }),
       ),
     },
-    files: ["dist", "tokens", "metadata", "CHANGELOG.md"],
+    files: ["dist", "tokens", "components", "CHANGELOG.md"],
     scripts: {
       build: "tsc",
       prepublishOnly: "npm run build",
@@ -88,7 +90,7 @@ export function generateTsConfig(): string {
         moduleResolution: "NodeNext",
         lib: ["ES2020", "DOM"],
         outDir: "./dist",
-        rootDir: "./src",
+        rootDir: ".",
         declaration: true,
         declarationMap: true,
         sourceMap: true,
@@ -97,7 +99,7 @@ export function generateTsConfig(): string {
         skipLibCheck: true,
         jsx: "react-jsx",
       },
-      include: ["src/**/*"],
+      include: ["index.ts", "components/**/*"],
       exclude: ["node_modules", "dist"],
     },
     null,
@@ -154,8 +156,10 @@ function App() {
 
 ${componentNames
   .map(
-    (c) =>
-      `- **${c.charAt(0).toUpperCase() + c.slice(1)}** — see \`metadata/${c}.json\` for contract`,
+    (c) => {
+      const pascal = c.charAt(0).toUpperCase() + c.slice(1);
+      return `- **${pascal}** — see \`components/${pascal}/${pascal}.json\` for props and usage`;
+    },
   )
   .join("\n")}
 
@@ -231,19 +235,9 @@ every semantic and component token that references it.
 
 ## AI tool integration
 
-The \`metadata/\` directory contains machine-readable component contracts.
+Each component ships with a machine-readable JSON contract (e.g. \`components/Button/Button.json\`).
 AI coding assistants (Copilot, Cursor, Claude Code) can read these to
 generate UI that respects your governance rules automatically.
-
-\`\`\`json
-// ${pkgName}/metadata/button.json
-{
-  "component": "Button",
-  "allowedVariants": ["primary", "secondary", "danger", "ghost"],
-  "requiredProps": ["aria-label"],
-  "accessibilityContract": { "keyboard": true, "focusRing": true }
-}
-\`\`\`
 
 ---
 

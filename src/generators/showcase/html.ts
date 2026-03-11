@@ -29,6 +29,10 @@ import {
 } from "./foundations";
 import { buildComponentPage } from "./page";
 import { SHOWCASE_COMPONENTS } from "./registry";
+import {
+  COMPONENT_JSON_DEFINITIONS,
+  COMPONENT_METADATA_DEFINITIONS,
+} from "../../adapters/react/componentDefinitions";
 
 // ─── generateShowcase ─────────────────────────────────────────────────────────
 
@@ -74,21 +78,7 @@ export function generateShowcase(
 
   const isPro = isProUnlocked();
 
-  const sections: Record<string, string> = {
-    colors: buildColorSection(config, tokens),
-    typography: buildTypographySection(config),
-    spacing: buildSpacingSection(config),
-    radius: buildRadiusSection(config),
-    elevation: buildElevationSection(config),
-    motion: buildMotionSection(config),
-    ...Object.fromEntries(
-      SHOWCASE_COMPONENTS.map((entry) => [
-        entry.id,
-        buildComponentPage(entry.def(config, tokens), isPro),
-      ]),
-    ),
-  };
-
+  // Build resolved CSS vars for component JSON cssVars field
   const flatTokens = Object.fromEntries(
     Object.entries(tokens).map(([k, v]) => [
       k.replace(/^(global|semantic|component)\./, ""),
@@ -98,6 +88,56 @@ export function generateShowcase(
   const lightTheme = config.themes?.["light"] ?? {};
   const darkTheme = config.themes?.["dark"] ?? {};
 
+  const lightCssVars: Record<string, string> = {
+    ...Object.fromEntries(Object.entries(flatTokens).map(([k, v]) => [`--${k}`, v])),
+    ...Object.fromEntries(Object.entries(lightTheme).map(([k, v]) => [`--${k}`, String(v)])),
+  };
+  const darkCssVars: Record<string, string> = {
+    ...Object.fromEntries(Object.entries(flatTokens).map(([k, v]) => [`--${k}`, v])),
+    ...Object.fromEntries(Object.entries(darkTheme).map(([k, v]) => [`--${k}`, String(v)])),
+  };
+  const resolvedCssVars = { light: lightCssVars, dark: darkCssVars };
+
+  const sections: Record<string, string> = {
+    colors: buildColorSection(config, tokens),
+    typography: buildTypographySection(config),
+    spacing: buildSpacingSection(config),
+    radius: buildRadiusSection(config),
+    elevation: buildElevationSection(config),
+    motion: buildMotionSection(config),
+    ...Object.fromEntries(
+      SHOWCASE_COMPONENTS.map((entry) => {
+        const defData = entry.def(config, tokens);
+        const jsonDef = COMPONENT_JSON_DEFINITIONS[entry.label];
+        const metaDef = COMPONENT_METADATA_DEFINITIONS[entry.label] ?? null;
+        const componentJson = jsonDef
+          ? { ...jsonDef, cssVars: resolvedCssVars }
+          : {
+              name: entry.label,
+              description: entry.pageDescription,
+              props: defData.props,
+              examples: defData.examples.map((ex) => ({ label: ex.label, code: ex.code })),
+              cssVars: resolvedCssVars,
+            };
+        return [
+          entry.id,
+          buildComponentPage({
+            id: entry.id,
+            label: entry.label,
+            description: componentJson.description,
+            overviewHtml: defData.overviewHtml,
+            json: componentJson,
+            showcaseExamples: defData.examples,
+            a11yContract: metaDef?.accessibilityContract ?? null,
+            a11yItems: defData.a11y,
+            metadata: isPro ? metaDef : null,
+            isPro,
+          }),
+        ];
+      }),
+    ),
+  };
+
   const themeCssLight = Object.entries({ ...flatTokens, ...lightTheme })
     .map(([k, v]) => `  --${k}: ${v};`)
     .join("\n");
@@ -106,6 +146,22 @@ export function generateShowcase(
     .join("\n");
 
   const densityCss = buildDensityCss();
+
+  // Bake the component data into window.__DSFORGE__ for developer inspection
+  const showcaseData = {
+    systemName: name,
+    generatedAt: new Date().toISOString(),
+    isPro,
+    components: SHOWCASE_COMPONENTS.map((entry) => {
+      const jsonDef = COMPONENT_JSON_DEFINITIONS[entry.label];
+      const metaDef = COMPONENT_METADATA_DEFINITIONS[entry.label] ?? null;
+      return {
+        json: jsonDef ? { ...jsonDef, cssVars: resolvedCssVars } : null,
+        metadata: isPro ? metaDef : null,
+      };
+    }),
+  };
+  const dataScript = `<script>\n    window.__DSFORGE__ = ${JSON.stringify(showcaseData)};\n  </script>`;
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="light" data-density="${defaultDensity}">
@@ -388,6 +444,20 @@ ${densityCss}
     }
 
     /* ── Accessibility ────────────────────────────────── */
+    /* Requirements grid */
+    .a11y-requirements { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--color-border-default, #e2e8f0); border-radius: 10px; overflow: hidden; margin-bottom: 4px; }
+    .a11y-req-row { padding: 14px 16px; border-bottom: 1px solid var(--color-border-default, #e2e8f0); background: var(--color-bg-default, #fff); }
+    .a11y-req-row:last-child { border-bottom: none; }
+    .a11y-req-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+    .a11y-req-label { font-size: 13px; font-weight: 600; color: var(--color-text-primary, #0f172a); }
+    .a11y-req-desc { font-size: 12px; color: var(--color-text-secondary, #64748b); line-height: 1.55; margin: 0; }
+    .a11y-role-chip { font-family: monospace; font-size: 12px; background: var(--color-bg-overlay, #f1f5f9); border: 1px solid var(--color-border-default, #e2e8f0); border-radius: 4px; padding: 1px 7px; color: var(--color-action, #2563eb); }
+    /* Notes */
+    .a11y-note { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--color-border-default, #e2e8f0); background: var(--color-bg-subtle, #f8fafc); }
+    .a11y-note:last-child { border-bottom: none; }
+    .a11y-note-icon { font-size: 12px; color: var(--color-text-secondary, #64748b); flex-shrink: 0; padding-top: 1px; }
+    .a11y-note-text { font-size: 12px; color: var(--color-text-secondary, #64748b); line-height: 1.55; margin: 0; }
+    /* WCAG criteria list */
     .a11y-list { display: flex; flex-direction: column; gap: 1px; }
     .a11y-item { padding: 16px; border: 1px solid var(--color-border-default, #e2e8f0); border-radius: 8px; margin-bottom: 10px; background: var(--color-bg-default, #fff); }
     .a11y-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
@@ -457,6 +527,7 @@ ${densityCss}
     @keyframes dsforge-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { @keyframes dsforge-spin { to { transform: none; } } }
   </style>
+  ${dataScript}
 </head>
 <body>
 

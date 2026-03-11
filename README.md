@@ -4,9 +4,7 @@
 
 Your design tokens live in Figma. Your components drift from the spec. Your docs are six sprints out of date. dsforge fixes all three with one config file.
 
-![dsforge showcase](docs/showcase.png)
-
----
+## <img src="https://1drv.ms/i/c/03940e999db687d7/IQRd4C2SBuklSKHZ7qbr4WpAATzAfp-Oh-rRuIUqawsH0yA" />
 
 ## Before / After
 
@@ -58,18 +56,18 @@ Output lands in `dist-ds/`. Regenerate it any time by running `generate` again.
     "global": {
       "brand-600": "#2563eb",
       "neutral-900": "#0f172a",
-      "neutral-0":   "#ffffff"
+      "neutral-0": "#ffffff"
     },
     "semantic": {
-      "color-action":       "{global.brand-600}",
+      "color-action": "{global.brand-600}",
       "color-text-primary": "{global.neutral-900}",
-      "color-bg-default":   "{global.neutral-0}"
+      "color-bg-default": "{global.neutral-0}"
     }
   },
   "typography": {
     "fontFamily": "Inter, system-ui, sans-serif",
     "roles": {
-      "body":    { "size": 16, "weight": 400, "lineHeight": 1.6 },
+      "body": { "size": 16, "weight": 400, "lineHeight": 1.6 },
       "heading": { "size": 24, "weight": 700, "lineHeight": 1.2 }
     }
   },
@@ -144,17 +142,17 @@ Includes live component previews with all variants and states, themed with your 
 
 `dsforge validate` runs nine health checks and produces a scored report:
 
-| Check | Max score |
-| --- | --- |
-| Token architecture | 15 |
-| Typography | 10 |
-| Spacing | 10 |
-| Radius | 5 |
-| Elevation | 5 |
-| Motion | 5 |
-| Themes | 10 |
-| Token resolution | 14 |
-| Governance rules | 15 |
+| Check              | Max score |
+| ------------------ | --------- |
+| Token architecture | 15        |
+| Typography         | 10        |
+| Spacing            | 10        |
+| Radius             | 5         |
+| Elevation          | 5         |
+| Motion             | 5         |
+| Themes             | 10        |
+| Token resolution   | 14        |
+| Governance rules   | 15        |
 
 Scores below 70 are flagged as warnings. WCAG contrast is checked automatically for all color token pairs.
 
@@ -186,13 +184,13 @@ Run this before deploying a config update to understand downstream impact.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `dsforge init` | Scaffold `design-system.config.json` and `design-system.rules.json` |
+| Command            | What it does                                                         |
+| ------------------ | -------------------------------------------------------------------- |
+| `dsforge init`     | Scaffold `design-system.config.json` and `design-system.rules.json`  |
 | `dsforge generate` | Run the full pipeline — tokens, components, metadata, docs, showcase |
-| `dsforge validate` | Run 9 health checks and score against governance rules |
-| `dsforge diff` | Compare two configs — BREAKING / CHANGED / ADDED |
-| `dsforge showcase` | Open `dist-ds/showcase.html` in your default browser |
+| `dsforge validate` | Run 9 health checks and score against governance rules               |
+| `dsforge diff`     | Compare two configs — BREAKING / CHANGED / ADDED                     |
+| `dsforge showcase` | Open `dist-ds/showcase.html` in your default browser                 |
 
 Run `dsforge` with no arguments for an interactive menu.
 

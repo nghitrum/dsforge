@@ -34,6 +34,8 @@ export function radioDef(
     label: "Radio",
     description:
       "Single selection within a mutually exclusive group. Always pair Radio with RadioGroup.",
+    usageExample: `<Radio label="Option A" name="choice" value="a" checked={choice === 'a'} onChange={() => setChoice('a')} />
+<Radio label="Option B" name="choice" value="b" checked={choice === 'b'} onChange={() => setChoice('b')} />`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">RadioGroup (vertical)</div>

@@ -70,6 +70,8 @@ export interface ComponentDef {
   id: string;
   label: string;
   description: string;
+  /** Concise snippet shown in the docs section. Separate from the full examples. */
+  usageExample: string;
   overviewHtml: string;
   props: PropDef[];
   examples: ExampleDef[];

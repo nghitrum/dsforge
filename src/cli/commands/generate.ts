@@ -7,10 +7,9 @@
  *   3. Emit CSS custom property files (base.css + one per theme)
  *   4. Emit JS/TS token constants + Tailwind config  [via adapter]
  *   5. Generate React components (Button, Input, Card, ThemeProvider) [via adapter]
- *   6. Generate AI-consumable metadata JSON
- *   7. Generate MDX documentation                    [via adapter]
- *   8. Emit package.json, tsconfig, README, CHANGELOG [via adapter]
- *   9. Generate showcase.html
+ *   6. Generate AI-consumable metadata JSON           [Pro only]
+ *   7. Emit package.json, tsconfig, README, CHANGELOG [via adapter]
+ *   8. Generate showcase.html
  */
 
 import path from "node:path";
@@ -31,6 +30,8 @@ import {
   generateChangelog,
 } from "../../generators/package/emitter";
 import { reactAdapter, REACT_COMPONENTS } from "../../adapters/react/index";
+import { isProUnlocked } from "../../lib/license";
+import { applyPreset } from "./init";
 import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 export interface GenerateOptions {
@@ -70,8 +71,7 @@ function fatal(
 //      ├── tokens/
 //      │   ├── base.css  ├── light.css  ├── dark.css
 //      │   ├── tokens.js └── tailwind.js
-//      ├── metadata/
-//      └── docs/
+//      └── metadata/   (Pro only)
 
 const OUT_DIR = "dist-ds";
 
@@ -98,6 +98,14 @@ export async function runGenerate(
       err,
       options.debug ?? false,
     );
+  }
+
+  // If config.meta.preset is set, re-apply the preset's spacing/radius values
+  // so that editing the preset field in the config JSON takes effect on the
+  // next generate run — no need to re-run init.
+  const presetValue = config!.meta.preset;
+  if (presetValue === "compact" || presetValue === "comfortable" || presetValue === "spacious") {
+    applyPreset(config!, presetValue);
   }
 
   // Ensure all known components have metadata and docs generated, even when
@@ -225,8 +233,8 @@ export async function runGenerate(
     logger.success(`${generatedNames.length} components generated`);
   }
 
-  // ── 6. Metadata ──
-  if (!only || only === "metadata") {
+  // ── 6. Metadata (Pro only) ──
+  if (isProUnlocked() && (!only || only === "metadata")) {
     logger.step("Writing AI metadata...");
     const metaDir = path.join(outRoot, "metadata");
     await ensureDir(metaDir);
@@ -238,35 +246,6 @@ export async function runGenerate(
     }
 
     logger.success(`Metadata written (${metaFiles.length} files)`);
-  }
-
-  // ── 7. Docs ──
-  if (!only || only === "docs") {
-    logger.step("Generating docs...");
-    const docsDir = path.join(outRoot, "docs");
-    await ensureDir(docsDir);
-
-    const metadataFiles = generateMetadata(config, fullRules, tokenCount);
-    const metadataMap: Record<
-      string,
-      import("../../generators/metadata/generator").ComponentMetadata
-    > = {};
-    for (const { filename, content } of metadataFiles) {
-      const name = filename.replace(".json", "");
-      if (name !== "index") {
-        metadataMap[name] = JSON.parse(
-          content,
-        ) as import("../../generators/metadata/generator").ComponentMetadata;
-      }
-    }
-
-    const docFiles = reactAdapter.generateDocs(config, fullRules, metadataMap);
-    for (const { filename, content } of docFiles) {
-      await writeFile(path.join(docsDir, filename), content);
-      logger.dim(`  → docs/${filename}`);
-    }
-
-    logger.success(`Docs written (${docFiles.length} files)`);
   }
 
   // ── 8. Package files ──

@@ -43,6 +43,11 @@ export function checkboxDef(
     label: "Checkbox",
     description:
       "Binary toggle for boolean values. Supports indeterminate state for partial selections.",
+    usageExample: `<Checkbox
+  label="Accept terms"
+  checked={accepted}
+  onChange={(e) => setAccepted(e.target.checked)}
+/>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">States</div>

@@ -44,7 +44,7 @@ export function generatePackageJson(
         componentNames.map((c) => [`./metadata/${c}`, `./metadata/${c}.json`]),
       ),
     },
-    files: ["dist", "tokens", "metadata", "docs", "CHANGELOG.md"],
+    files: ["dist", "tokens", "metadata", "CHANGELOG.md"],
     scripts: {
       build: "tsc",
       prepublishOnly: "npm run build",

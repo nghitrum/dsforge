@@ -39,6 +39,12 @@ export function toastDef(
     label: "Toast / Alert",
     description:
       "Feedback for user actions. Alert is inline and static; Toast is an overlay with auto-dismiss and a useToast() hook.",
+    usageExample: `<Toast
+  message="Changes saved successfully"
+  variant="success"
+  duration={3000}
+  onDismiss={() => setToast(null)}
+/>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">Alert — inline variants</div>

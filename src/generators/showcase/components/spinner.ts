@@ -30,6 +30,7 @@ export function spinnerDef(
     label: "Spinner",
     description:
       "Loading indicator for async operations. Includes a visually hidden status label for screen readers.",
+    usageExample: `<Spinner size="lg" label="Saving your changes" />`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">Sizes</div>

@@ -24,6 +24,8 @@ export function badgeDef(
     label: "Badge",
     description:
       "Compact label for status, categories, or counts. Display-only — not interactive.",
+    usageExample: `<Badge variant="success">Active</Badge>
+<Badge variant="warning">Pending</Badge>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">Variants</div>

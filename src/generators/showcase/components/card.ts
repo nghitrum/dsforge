@@ -39,6 +39,10 @@ export function cardDef(
     label: "Card",
     description:
       "A surface that groups related content. Supports header, body, and optional footer slots.",
+    usageExample: `<Card padding="lg">
+  <h2>Card title</h2>
+  <p>Card content goes here.</p>
+</Card>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">Variants</div>

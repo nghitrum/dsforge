@@ -5,6 +5,7 @@ import { logger } from "../../utils/logger";
 import { projectExists } from "../../utils/fs";
 import { CONFIG_FILENAME, RULES_FILENAME } from "../../utils/fs";
 import { ask, confirm } from "../prompt";
+import { isProUnlocked } from "../../lib/license";
 import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 // ─── Preset density maps ──────────────────────────────────────────────────────
@@ -49,6 +50,47 @@ const RADIUS_PRESETS: Record<Preset, Record<string, number>> = {
   comfortable: { none: 0, sm: 2, md: 4, lg: 8, xl: 16, full: 9999 },
   spacious: { none: 0, sm: 3, md: 6, lg: 12, xl: 20, full: 9999 },
 };
+
+// ─── Preset applicator ────────────────────────────────────────────────────────
+
+/**
+ * Re-applies a preset's spacing and radius values to an existing config object.
+ * Called during `generate` so that config.meta.preset is always live — editing
+ * that field in design-system.config.json and re-running generate is enough to
+ * switch density without re-running init.
+ */
+export function applyPreset(
+  config: DesignSystemConfig,
+  preset: Preset,
+): void {
+  const spacing = SPACING_PRESETS[preset];
+  const radius = RADIUS_PRESETS[preset];
+  const baseUnit = preset === "compact" ? 2 : preset === "spacious" ? 6 : 4;
+
+  config.spacing = {
+    ...config.spacing,
+    baseUnit,
+    scale: spacing,
+    semantic: {
+      "component-padding-xs": `${spacing["1"]}`,
+      "component-padding-sm": `${spacing["2"]}`,
+      "component-padding-md": `${spacing["4"]}`,
+      "component-padding-lg": `${spacing["5"]}`,
+      "layout-gap-xs": `${spacing["2"]}`,
+      "layout-gap-sm": `${spacing["3"]}`,
+      "layout-gap-md": `${spacing["5"]}`,
+      "layout-gap-lg": `${spacing["6"]}`,
+      "layout-section": `${spacing["7"]}`,
+    },
+  };
+
+  config.radius = { ...config.radius, ...radius };
+
+  config.philosophy = {
+    ...config.philosophy,
+    density: preset,
+  };
+}
 
 // ─── Config template builder ──────────────────────────────────────────────────
 
@@ -434,7 +476,16 @@ export async function runInit(
 
   // ── Resolve preset ──
   let preset: (typeof VALID_PRESETS)[number];
-  if (options.preset && VALID_PRESETS.includes(options.preset as never)) {
+  if (!isProUnlocked()) {
+    // Free tier: compact and spacious are Pro-only
+    if (options.preset && options.preset !== "comfortable") {
+      logger.hint(
+        `Preset "${options.preset}" requires dsforge Pro`,
+        `Set DSFORGE_KEY to unlock compact and spacious. Using comfortable.`,
+      );
+    }
+    preset = "comfortable";
+  } else if (options.preset && VALID_PRESETS.includes(options.preset as never)) {
     preset = options.preset as (typeof VALID_PRESETS)[number];
   } else {
     const answer = await ask(

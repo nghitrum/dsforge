@@ -34,6 +34,13 @@ export function inputDef(
     label: "Input",
     description:
       "Single-line text field. Covers all standard input types with label, helper text, and validation states.",
+    usageExample: `<Input
+  label="Email"
+  placeholder="you@example.com"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  error={emailError}
+/>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">States</div>

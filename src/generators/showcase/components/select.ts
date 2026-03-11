@@ -43,6 +43,12 @@ export function selectDef(
     label: "Select",
     description:
       "Dropdown picker for selecting from a list of options. Wraps native <select> for full accessibility.",
+    usageExample: `<Select
+  label="Country"
+  options={[{ label: 'Norway', value: 'no' }, { label: 'Sweden', value: 'se' }]}
+  value={country}
+  onChange={(e) => setCountry(e.target.value)}
+/>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">States</div>

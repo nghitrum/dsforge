@@ -22,6 +22,9 @@ export function buttonDef(
     label: "Button",
     description:
       "Triggers an action or event. Use for form submissions, dialogs, and in-page actions.",
+    usageExample: `<Button variant="primary" size="md" onClick={() => {}}>
+  Save changes
+</Button>`,
     overviewHtml: `
       <div class="comp-overview-section">
         <div class="comp-overview-label">Variants</div>

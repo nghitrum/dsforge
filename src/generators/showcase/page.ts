@@ -14,7 +14,9 @@ export function buildComponentPage(def: ComponentDef, isPro: boolean): string {
   const panelId = (tab: string) => `${def.id}-panel-${tab}`;
 
   // ── Overview ──────────────────────────────────────────────────────────────
-  const overviewHtml = `<div class="comp-overview">${def.overviewHtml}</div>`;
+  const overviewHtml = `
+    <div class="comp-overview">${def.overviewHtml}</div>
+    <p class="component-description">${esc(def.description)}</p>`;
 
   // ── Props table ───────────────────────────────────────────────────────────
   const propsTable = `

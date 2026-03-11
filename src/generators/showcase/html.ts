@@ -375,6 +375,27 @@ ${themeCssDark}
     .ds-card-body   { padding: 12px 14px; }
     .ds-card-footer { padding: 10px 14px; display: flex; justify-content: flex-end; }
 
+    /* ── Component docs ───────────────────────────────── */
+    .component-docs { margin-top: 36px; }
+    .component-description {
+      font-size: 14px; color: var(--color-text-secondary, #64748b);
+      line-height: 1.65; margin-bottom: 24px; max-width: 640px;
+    }
+    .component-docs h4 {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--color-text-secondary, #64748b);
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border-default, #e2e8f0);
+    }
+    .usage-example {
+      margin: 0; padding: 16px 18px;
+      background: var(--color-bg-default, #fff);
+      color: var(--color-text-primary, #0f172a);
+      border: 1px solid var(--color-border-default, #e2e8f0); border-radius: 8px;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 12.5px; line-height: 1.65; overflow-x: auto; white-space: pre;
+    }
+
     /* ── Spinner animation ────────────────────────────── */
     @keyframes dsforge-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { @keyframes dsforge-spin { to { transform: none; } } }

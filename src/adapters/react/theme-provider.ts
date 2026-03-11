@@ -7,6 +7,7 @@
  */
 
 import type { DesignSystemConfig } from "../../types/index";
+import { isProUnlocked } from "../../lib/license";
 
 // ─── ThemeProvider ────────────────────────────────────────────────────────────
 
@@ -16,6 +17,72 @@ export function generateThemeProvider(config: DesignSystemConfig): string {
     ? "light"
     : (themeNames[0] ?? "light");
   const themeType = themeNames.map((t) => `"${t}"`).join(" | ");
+  const isPro = isProUnlocked();
+  const defaultDensity = config.meta.preset ?? "comfortable";
+
+  const densityImport = isPro ? `\nimport "../tokens/density.css";` : "";
+
+  const densityTypes = isPro
+    ? `\nexport type DensityName = "compact" | "comfortable" | "spacious";\n`
+    : "";
+
+  const densityContextTypes = isPro
+    ? `\nexport interface DensityContextValue {
+  density: DensityName;
+  setDensity: (density: DensityName) => void;
+}\n`
+    : "";
+
+  const densityContext = isPro
+    ? `\nexport const DensityContext = React.createContext<DensityContextValue>({
+  density: "${defaultDensity}",
+  setDensity: () => undefined,
+});
+
+/**
+ * Hook to read and change the current density.
+ * Must be used inside a <ThemeProvider>.
+ */
+export function useDensity(): DensityContextValue {
+  return React.useContext(DensityContext);
+}\n`
+    : "";
+
+  const densityProp = isPro
+    ? `\n  /** Component density. Requires density.css to be imported. Defaults to "${defaultDensity}". */\n  density?: DensityName;`
+    : "";
+
+  const densityOnChangeProp = isPro
+    ? `\n  /** Called when setDensity is invoked. */\n  onDensityChange?: (density: DensityName) => void;`
+    : "";
+
+  const densityState = isPro
+    ? `\n  const [density, setDensityState] = React.useState<DensityName>(initialDensity);\n
+  React.useEffect(() => {
+    setDensityState(initialDensity);
+  }, [initialDensity]);\n
+  const setDensity = React.useCallback(
+    (next: DensityName) => {
+      setDensityState(next);
+      onDensityChange?.(next);
+    },
+    [onDensityChange],
+  );\n`
+    : "";
+
+  const densityDestructure = isPro
+    ? `,\n  density: initialDensity = "${defaultDensity}",\n  onDensityChange,`
+    : "";
+
+  const densityProviderOpen = isPro
+    ? `\n      <DensityContext.Provider value={{ density, setDensity }}>`
+    : "";
+
+  const densityDataAttr = isPro ? ` data-density={density}` : "";
+
+  const densityProviderClose = isPro
+    ? `\n      </DensityContext.Provider>`
+    : "";
 
   return `/**
  * ThemeProvider — ${config.meta.name}
@@ -28,27 +95,27 @@ export function generateThemeProvider(config: DesignSystemConfig): string {
  *   import "@${config.meta.name}/tokens/light.css";  // or dark.css
  *   import { ThemeProvider } from "@${config.meta.name}";
  *
- *   <ThemeProvider theme="light">
+ *   <ThemeProvider theme="light"${isPro ? ` density="${defaultDensity}"` : ""}>
  *     <App />
  *   </ThemeProvider>
  */
 
-import React from "react";
+import React from "react";${densityImport}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ThemeName = ${themeType};
-
+${densityTypes}
 export interface ThemeContextValue {
   theme: ThemeName;
   setTheme: (theme: ThemeName) => void;
 }
-
+${densityContextTypes}
 export interface ThemeProviderProps {
   /** Initial theme. Defaults to "${defaultTheme}". */
   theme?: ThemeName;
   /** Called when setTheme is invoked — use to persist theme preference. */
-  onThemeChange?: (theme: ThemeName) => void;
+  onThemeChange?: (theme: ThemeName) => void;${densityProp}${densityOnChangeProp}
   children: React.ReactNode;
 }
 
@@ -66,12 +133,12 @@ export const ThemeContext = React.createContext<ThemeContextValue>({
 export function useTheme(): ThemeContextValue {
   return React.useContext(ThemeContext);
 }
-
+${densityContext}
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function ThemeProvider({
   theme: initialTheme = "${defaultTheme}",
-  onThemeChange,
+  onThemeChange,${densityDestructure}
   children,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<ThemeName>(initialTheme);
@@ -87,13 +154,13 @@ export function ThemeProvider({
     },
     [onThemeChange],
   );
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      <div data-theme={theme} style={{ display: "contents" }}>
-        {children}
-      </div>
-    </ThemeContext.Provider>
+${densityState}
+  return (${densityProviderOpen}
+      <ThemeContext.Provider value={{ theme, setTheme }}>
+        <div data-theme={theme}${densityDataAttr} style={{ display: "contents" }}>
+          {children}
+        </div>
+      </ThemeContext.Provider>${densityProviderClose}
   );
 }
 `;

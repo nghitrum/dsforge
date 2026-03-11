@@ -91,32 +91,37 @@ export function buildTypographySection(config: DesignSystemConfig): string {
 
 export function buildSpacingSection(config: DesignSystemConfig): string {
   const scale = config.spacing?.scale ?? {};
-  const baseUnit = config.spacing?.baseUnit ?? 4;
 
-  const row = (key: string, val: unknown) => `
+  // Bars use CSS vars so they live-update when data-density changes.
+  const scaleRow = (key: string) => `
+    <div class="spacing-row">
+      <span class="spacing-key">spacing-${esc(key)}</span>
+      <div class="spacing-bar-wrap">
+        <div class="spacing-bar" style="width:min(calc(var(--spacing-${esc(key)}) * 2), 320px)"></div>
+      </div>
+      <span class="spacing-val" data-spacing-var="--spacing-${esc(key)}"></span>
+    </div>`;
+
+  const semanticRow = (key: string) => `
     <div class="spacing-row">
       <span class="spacing-key">${esc(key)}</span>
       <div class="spacing-bar-wrap">
-        <div class="spacing-bar" style="width:${Math.min(Number(val) * 2, 320)}px"></div>
+        <div class="spacing-bar" style="width:min(calc(var(--${esc(key)}) * 2), 320px)"></div>
       </div>
-      <span class="spacing-val">${val}px</span>
+      <span class="spacing-val" data-spacing-var="--${esc(key)}"></span>
     </div>`;
 
   return `
     <div class="section-block">
-      <h3 class="group-title">Base Unit: ${baseUnit}px</h3>
+      <h3 class="group-title">Scale</h3>
       <div class="spacing-list">
-        ${Object.entries(scale)
-          .map(([k, v]) => row(k, v))
-          .join("")}
+        ${Object.keys(scale).map((k) => scaleRow(k)).join("")}
       </div>
     </div>
     <div class="section-block">
       <h3 class="group-title">Semantic Spacing</h3>
       <div class="spacing-list">
-        ${Object.entries(config.spacing?.semantic ?? {})
-          .map(([k, v]) => row(k, v))
-          .join("")}
+        ${Object.keys(config.spacing?.semantic ?? {}).map((k) => semanticRow(k)).join("")}
       </div>
     </div>
   `;
@@ -128,13 +133,13 @@ export function buildRadiusSection(config: DesignSystemConfig): string {
     <div class="section-block">
       <h3 class="group-title">Border Radius</h3>
       <div class="radius-grid">
-        ${Object.entries(radius)
+        ${Object.keys(radius)
           .map(
-            ([key, val]) => `
+            (key) => `
           <div class="radius-item">
-            <div class="radius-box" style="border-radius:${val}px"></div>
+            <div class="radius-box" style="border-radius:var(--radius-${esc(key)})"></div>
             <span class="radius-key">${esc(key)}</span>
-            <span class="radius-val">${val}px</span>
+            <span class="radius-val" data-spacing-var="--radius-${esc(key)}"></span>
           </div>
         `,
           )

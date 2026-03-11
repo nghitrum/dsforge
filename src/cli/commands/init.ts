@@ -7,90 +7,16 @@ import { CONFIG_FILENAME, RULES_FILENAME } from "../../utils/fs";
 import { ask, confirm } from "../prompt";
 import { isProUnlocked } from "../../lib/license";
 import type { DesignSystemConfig, RulesConfig } from "../../types/index";
+import {
+  type Preset,
+  SPACING_PRESETS,
+  RADIUS_PRESETS,
+  PRESET_BASE_UNITS,
+  buildSemanticSpacing,
+  applyPreset,
+} from "../../presets/index";
 
-// ─── Preset density maps ──────────────────────────────────────────────────────
-
-type Preset = "compact" | "comfortable" | "spacious";
-
-const SPACING_PRESETS: Record<Preset, Record<string, number>> = {
-  compact: {
-    "1": 2,
-    "2": 4,
-    "3": 8,
-    "4": 12,
-    "5": 16,
-    "6": 24,
-    "7": 32,
-    "8": 48,
-  },
-  comfortable: {
-    "1": 4,
-    "2": 8,
-    "3": 12,
-    "4": 16,
-    "5": 24,
-    "6": 32,
-    "7": 48,
-    "8": 64,
-  },
-  spacious: {
-    "1": 6,
-    "2": 12,
-    "3": 18,
-    "4": 24,
-    "5": 36,
-    "6": 48,
-    "7": 72,
-    "8": 96,
-  },
-};
-
-const RADIUS_PRESETS: Record<Preset, Record<string, number>> = {
-  compact: { none: 0, sm: 2, md: 3, lg: 6, xl: 10, full: 9999 },
-  comfortable: { none: 0, sm: 2, md: 4, lg: 8, xl: 16, full: 9999 },
-  spacious: { none: 0, sm: 3, md: 6, lg: 12, xl: 20, full: 9999 },
-};
-
-// ─── Preset applicator ────────────────────────────────────────────────────────
-
-/**
- * Re-applies a preset's spacing and radius values to an existing config object.
- * Called during `generate` so that config.meta.preset is always live — editing
- * that field in design-system.config.json and re-running generate is enough to
- * switch density without re-running init.
- */
-export function applyPreset(
-  config: DesignSystemConfig,
-  preset: Preset,
-): void {
-  const spacing = SPACING_PRESETS[preset];
-  const radius = RADIUS_PRESETS[preset];
-  const baseUnit = preset === "compact" ? 2 : preset === "spacious" ? 6 : 4;
-
-  config.spacing = {
-    ...config.spacing,
-    baseUnit,
-    scale: spacing,
-    semantic: {
-      "component-padding-xs": `${spacing["1"]}`,
-      "component-padding-sm": `${spacing["2"]}`,
-      "component-padding-md": `${spacing["4"]}`,
-      "component-padding-lg": `${spacing["5"]}`,
-      "layout-gap-xs": `${spacing["2"]}`,
-      "layout-gap-sm": `${spacing["3"]}`,
-      "layout-gap-md": `${spacing["5"]}`,
-      "layout-gap-lg": `${spacing["6"]}`,
-      "layout-section": `${spacing["7"]}`,
-    },
-  };
-
-  config.radius = { ...config.radius, ...radius };
-
-  config.philosophy = {
-    ...config.philosophy,
-    density: preset,
-  };
-}
+export { applyPreset };
 
 // ─── Config template builder ──────────────────────────────────────────────────
 
@@ -300,19 +226,9 @@ export function buildInitialConfig(
     },
 
     spacing: {
-      baseUnit: preset === "compact" ? 2 : preset === "spacious" ? 6 : 4,
+      baseUnit: PRESET_BASE_UNITS[preset],
       scale: spacing,
-      semantic: {
-        "component-padding-xs": `${spacing[1]}`,
-        "component-padding-sm": `${spacing[2]}`,
-        "component-padding-md": `${spacing[4]}`,
-        "component-padding-lg": `${spacing[5]}`,
-        "layout-gap-xs": `${spacing[2]}`,
-        "layout-gap-sm": `${spacing[3]}`,
-        "layout-gap-md": `${spacing[5]}`,
-        "layout-gap-lg": `${spacing[6]}`,
-        "layout-section": `${spacing[7]}`,
-      },
+      semantic: buildSemanticSpacing(spacing),
     },
 
     radius,

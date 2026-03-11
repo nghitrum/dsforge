@@ -23,7 +23,7 @@ import {
 import { resolveTokens } from "../../core/token-resolver";
 import { logger } from "../../utils/logger";
 import { validateConfig } from "./validate";
-import { generateCssFiles } from "../../generators/tokens/css-vars";
+import { generateCssFiles, emitDensityCss } from "../../generators/tokens/css-vars";
 import { generateMetadata } from "../../generators/metadata/generator";
 import {
   generateTsConfig,
@@ -31,7 +31,7 @@ import {
 } from "../../generators/package/emitter";
 import { reactAdapter, REACT_COMPONENTS } from "../../adapters/react/index";
 import { isProUnlocked } from "../../lib/license";
-import { applyPreset } from "./init";
+import { applyPreset } from "../../presets/index";
 import type { DesignSystemConfig, RulesConfig } from "../../types/index";
 
 export interface GenerateOptions {
@@ -179,6 +179,15 @@ export async function runGenerate(
     for (const { filename, content } of cssFiles) {
       await writeFile(path.join(tokensDir, filename), content);
       logger.dim(`  → tokens/${filename}`);
+    }
+
+    // density.css — Pro only: all three presets as [data-density] selectors
+    if (isProUnlocked()) {
+      await writeFile(
+        path.join(tokensDir, "density.css"),
+        emitDensityCss(config),
+      );
+      logger.dim(`  → tokens/density.css`);
     }
 
     // JS/Tailwind — adapter-owned

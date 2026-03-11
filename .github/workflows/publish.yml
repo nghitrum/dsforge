@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish to npm (Alpha)
 
 on:
   push:
@@ -15,7 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Fetch all history so npm version can tag/push correctly
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -25,20 +24,21 @@ jobs:
 
       - run: npm ci
 
-      # 1. Bump version FIRST so package.json is updated before the build
-      - name: Bump version
+      # 1. Bump to a prerelease version (e.g., 0.1.4-alpha.0)
+      - name: Bump prerelease version
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          npm version patch -m "chore: bump version to %s [skip ci]"
-          git push
+          # Use 'prerelease' to increment alpha.0 -> alpha.1, etc.
+          # Use '--preid' to set the tag name
+          npm version prerelease --preid=alpha -m "chore: alpha release %s [skip ci]"
+          git push --follow-tags
 
-      # 2. Build NOW so the code/binaries capture the new version number
+      # 2. Build SECOND so the binary sees the new version number
       - run: npm run build --if-present
-
       - run: npm test
 
-      # 3. Publish the updated build to npm
-      - run: npm publish --access=public
+      # 3. Publish with the --tag alpha flag
+      - run: npm publish --access=public --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -4,7 +4,7 @@
 
 Your design tokens live in Figma. Your components drift from the spec. Your docs are six sprints out of date. dsforge fixes all three with one config file.
 
-<video src="https://github.com/user-attachments/assets/727fcfe2-9814-49e6-9160-29b8b6590b6a" autoplay loop muted playsinline></video>
+<video src="https://github.com/user-attachments/assets/1f4b563e-9217-4636-a265-702ccd93ba25" autoplay loop muted playsinline></video>
 
 ## Before / After
 

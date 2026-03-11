@@ -6,23 +6,26 @@ on:
       - main
 
 permissions:
-  id-token: write # Required for OIDC
-  contents: write # Required to push the version bump commit
+  id-token: write
+  contents: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Fetch all history so npm version can tag/push correctly
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm test
 
+      - run: npm ci
+
+      # 1. Bump version FIRST so package.json is updated before the build
       - name: Bump version
         run: |
           git config user.email "actions@github.com"
@@ -30,6 +33,12 @@ jobs:
           npm version patch -m "chore: bump version to %s [skip ci]"
           git push
 
+      # 2. Build NOW so the code/binaries capture the new version number
+      - run: npm run build --if-present
+
+      - run: npm test
+
+      # 3. Publish the updated build to npm
       - run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

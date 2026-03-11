@@ -100,6 +100,12 @@ export async function runGenerate(
     );
   }
 
+  // Ensure all known components have metadata and docs generated, even when
+  // they are absent from design-system.rules.json.
+  const fullRules: RulesConfig = Object.fromEntries(
+    REACT_COMPONENTS.map((name) => [name, rules![name] ?? {}]),
+  );
+
   // ── 2. Pre-flight validate ──
   logger.step("Running pre-flight validation...");
   const validation = validateConfig(config!, rules!);
@@ -225,7 +231,7 @@ export async function runGenerate(
     const metaDir = path.join(outRoot, "metadata");
     await ensureDir(metaDir);
 
-    const metaFiles = generateMetadata(config, rules, tokenCount);
+    const metaFiles = generateMetadata(config, fullRules, tokenCount);
     for (const { filename, content } of metaFiles) {
       await writeFile(path.join(metaDir, filename), content);
       logger.dim(`  → metadata/${filename}`);
@@ -240,7 +246,7 @@ export async function runGenerate(
     const docsDir = path.join(outRoot, "docs");
     await ensureDir(docsDir);
 
-    const metadataFiles = generateMetadata(config, rules, tokenCount);
+    const metadataFiles = generateMetadata(config, fullRules, tokenCount);
     const metadataMap: Record<
       string,
       import("../../generators/metadata/generator").ComponentMetadata
@@ -254,7 +260,7 @@ export async function runGenerate(
       }
     }
 
-    const docFiles = reactAdapter.generateDocs(config, rules, metadataMap);
+    const docFiles = reactAdapter.generateDocs(config, fullRules, metadataMap);
     for (const { filename, content } of docFiles) {
       await writeFile(path.join(docsDir, filename), content);
       logger.dim(`  → docs/${filename}`);
@@ -267,7 +273,7 @@ export async function runGenerate(
   if (!only) {
     logger.step("Writing package files...");
 
-    const componentNames = Object.keys(rules);
+    const componentNames = Object.keys(fullRules);
 
     const { filename: pkgFile, content: pkgContent } =
       reactAdapter.generatePackageManifest(config, componentNames);

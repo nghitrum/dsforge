@@ -7,11 +7,12 @@ import { runValidate } from "./commands/validate";
 import { runDiff } from "./commands/diff";
 import { runMenu } from "./menu";
 import { runShowcase } from "./commands/showcase";
+import pkg from "../../package.json";
 
 program
   .name("dsforge")
   .description(chalk.bold("dsforge") + " — AI-native design system generator")
-  .version("0.1.0");
+  .version(pkg.version);
 
 program
   .command("init")
